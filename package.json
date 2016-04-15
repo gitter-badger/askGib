@@ -3,19 +3,26 @@
   "version": "0.0.1",
   "description": "Very small TypeScript-ified Alexa Skills Kit helper library.",
   "main": "bin/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ibgib/learnYourLinesYo.git"
+    "url": "git+https://github.com/ibgib/askGib.git"
   },
   "keywords": [
     "typescript",
     "alexa",
     "amazon"
   ],
-  "author": "ibgib@ibgib.com",
+  "author": {
+    "name" : "bill-mybiz",
+    "email" : "ibgib@ibgib.com",
+    "url" : "https://github.com/bill-mybiz"
+  },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ibgib/learnYourLinesYo/issues"
+    "url": "https://github.com/ibgib/askGib/issues"
   },
-  "homepage": "https://github.com/ibgib/learnYourLinesYo"
+  "homepage": "https://github.com/ibgib/askGib"
 }
