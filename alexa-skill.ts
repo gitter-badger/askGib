@@ -19,8 +19,6 @@
 */
 
 
-import * as help from './helper';
-
 import * as ask from './alexa-skills-kit';
 
 'use strict';
@@ -29,25 +27,12 @@ import * as ask from './alexa-skills-kit';
 /**  */
 export class AlexaSkill{
     constructor(appId: string) {
-        this._helper = new help.Helper();
+        console.log(`[AlexaSkill.ctor]`);
+        if (!appId) { throw new Error(`appId required`); }
 
-        let logContext = 'AlexaSkill.ctor';
-        this._helper.logFuncStart(logContext);
-
-        try {
-            if (!appId) { throw new Error(`appId required`); }
-
-            this._appId = appId;
-
-        } catch (errFunc) {
-            this._helper.logError(`errFunc`, errFunc, logContext);
-            throw errFunc;
-        }
-
-        this._helper.logFuncComplete(logContext);
+        this._appId = appId;
     }
 
-    _helper: help.IHelper;
     _appId: string;
 
     requestHandlers: any = {
