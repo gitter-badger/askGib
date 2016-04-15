@@ -4,7 +4,7 @@
         "target": "es5",
         "noImplicitAny": false,
         "outDir": "bin",
-        "rootDir": ".",
+        "rootDir": "./src",
         "sourceMap": false
     },
     "exclude": [
