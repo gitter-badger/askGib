@@ -25,7 +25,7 @@ import * as ask from './alexa-skills-kit';
 
 
 /**  */
-export class AlexaSkill{
+export class AlexaSkill {
     constructor(appId: string) {
         console.log(`[AlexaSkill.ctor]`);
         if (!appId) { throw new Error(`appId required`); }
@@ -244,7 +244,7 @@ export class ResponseClass {
     }
 }
 
-interface ISpeechletResponseOptions {
+export interface ISpeechletResponseOptions {
     session: any,
     output: ask.OutputSpeech,
     shouldEndSession: boolean,

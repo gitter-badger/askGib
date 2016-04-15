@@ -5,9 +5,11 @@
         "noImplicitAny": false,
         "outDir": "bin",
         "rootDir": "./src",
-        "sourceMap": false
+        "sourceMap": false,
+        "declaration": true
     },
     "exclude": [
+        "bin",
         "node_modules"
     ]
 }
