@@ -1,7 +1,7 @@
 {
   "name": "ask-gib",
-  "version": "0.0.1",
-  "description": "Very small TypeScript-ified Alexa Skills Kit helper library.",
+  "version": "0.0.2",
+  "description": "Very small TypeScript-ified Alexa Skills Kit helper library. This is NOT an official package from Amazon. Read the readme for more details.",
   "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

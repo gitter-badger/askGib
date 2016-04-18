@@ -1,6 +1,8 @@
 # askGib
 ask = Alexa Skills Kit
 
+NB: This is NOT an official package. Amazon has NOT given any endorsements or anything of that nature. I wanted to use TypeScript for developing Alexa Skills. Read on for further info.
+
 So this is a small helper library for ASK + TypeScript:
   * [alexa-skills-kit.ts](https://github.com/ibgib/askGib/blob/master/alexa-skills-kit.ts)
     * TypeScript typings for the [Alexa Skills Kit JSON Interface Reference for Custom Skills](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/alexa-skills-kit-interface-reference).
