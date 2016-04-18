@@ -102,7 +102,7 @@ export class AlexaSkill {
      */
     intentHandlers: any = {};
 
-    execute(event: any, context: any) {
+    execute(event: ask.RequestBody, context: ask.Context) {
         try {
             console.log("session applicationId: " + event.session.application.applicationId);
 
@@ -133,13 +133,13 @@ export class AlexaSkill {
 
 
 export class ResponseClass {
-    constructor(context, session) {
+    constructor(context: ask.Context, session: ask.Session) {
         this._context = context;
         this._session = session;
     };
 
-    _context: any;
-    _session: any;
+    _context: ask.Context;
+    _session: ask.Session;
 
     static buildResponseBody(options: ISpeechletResponseOptions): ask.ResponseBody {
         var alexaResponse: ask.Response = {
@@ -244,8 +244,9 @@ export class ResponseClass {
     }
 }
 
+/** Helper interface. I'm not really sure if this is absolutely necessary in architecture, but it was how the demo was set up. In the future, I may remove this little classlet. */
 export interface ISpeechletResponseOptions {
-    session: any,
+    session: ask.Session,
     output: ask.OutputSpeech,
     shouldEndSession: boolean,
     repromptSpeech?: ask.OutputSpeech,

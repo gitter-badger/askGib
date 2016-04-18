@@ -27,12 +27,12 @@ export declare class AlexaSkill {
      * Subclasses should override the intentHandlers with the functions to handle specific intents.
      */
     intentHandlers: any;
-    execute(event: any, context: any): void;
+    execute(event: ask.RequestBody, context: ask.Context): void;
 }
 export declare class ResponseClass {
-    constructor(context: any, session: any);
-    _context: any;
-    _session: any;
+    constructor(context: ask.Context, session: ask.Session);
+    _context: ask.Context;
+    _session: ask.Session;
     static buildResponseBody(options: ISpeechletResponseOptions): ask.ResponseBody;
     tell({outputSpeech, repromptSpeech, shouldEndSession}: {
         outputSpeech: ask.OutputSpeech;
@@ -54,8 +54,9 @@ export declare class ResponseClass {
         cardContent: string;
     }): void;
 }
+/** Helper interface. I'm not really sure if this is absolutely necessary in architecture, but it was how the demo was set up. In the future, I may remove this little classlet. */
 export interface ISpeechletResponseOptions {
-    session: any;
+    session: ask.Session;
     output: ask.OutputSpeech;
     shouldEndSession: boolean;
     repromptSpeech?: ask.OutputSpeech;
