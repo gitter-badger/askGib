@@ -23,7 +23,7 @@
     "url" : "https://github.com/bill-mybiz"
   },
   "license": "MIT",
-  "typings": "bin/index.js",
+  "typings": "bin/index.d.ts",
   "bugs": {
     "url": "https://github.com/ibgib/askGib/issues"
   },
