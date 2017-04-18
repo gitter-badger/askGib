@@ -21,55 +21,92 @@
 
 import * as ask from './alexa-skills-kit';
 
+/**
+ * Imports helper that has logging, among other things.
+ */
+import * as help from './helper';
+let h = new help.Helper();
+
 'use strict';
 
 
 /**  */
 export class AlexaSkill {
     constructor(appId: string) {
-        console.log(`[AlexaSkill.ctor]`);
-        if (!appId) { throw new Error(`appId required`); }
-
-        this._appId = appId;
+        let t = this, lc = `AlexaSkill.ctor`;
+        let f = () => {
+            if (appId) {
+                t._appId = appId;
+            } else { 
+                throw new Error(`appId required`); 
+            }
+        };
+        h.gib(f, /*args*/ null, lc);
     }
 
     _appId: string;
 
     requestHandlers: any = {
-        LaunchRequest: function (event: ask.RequestBody, context, response: ask.Response) {
-            console.log(`[AlexaSkill.LaunchRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
-
-            this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
-        },
-
-        IntentRequest: function (event: ask.RequestBody, context, response) {
-            console.log(`[AlexaSkill.IntentRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
-            this.eventHandlers.onIntent.call(this, event.request, event.session, response);
-        },
-
-        SessionEndedRequest: function (event: ask.RequestBody, context: ask.Context) {
-            console.log(`[AlexaSkill.SessionEndedRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
-            this.eventHandlers.onSessionEnded(event.request, event.session);
-            context.succeed();
-        }
+        LaunchRequest: this.handleLaunchRequest,
+        IntentRequest: this.handleIntentRequest,
+        SessionEndedRequest: this.handleSessionEndedRequest
     };
 
-    eventHandlers: any = {
-        /**
-         * Called when the session starts.
-         * Subclasses could have overriden this function to open any necessary resources.
-         */
-        onSessionStarted: function (sessionStartedRequest, session: ask.Session) {
-            console.log(`[AlexaSkill.onSessionStarted] sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`);
-        },
+    handleLaunchRequest(
+        event: ask.RequestBody, 
+        context: ask.Context, 
+        response: ask.Response
+    ): void {
+        console.log(`[AlexaSkill.LaunchRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
 
-        /**
-         * Called when the user invokes the skill without specifying what they want.
-         * The subclass must override this function and provide feedback to the user.
-         */
-        onLaunch: function (launchRequest: ask.LaunchRequest, session: ask.Session, response: ask.Response) {
-            throw "onLaunch should be overriden by subclass";
-        },
+        this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
+    }
+
+    handleIntentRequest(
+        event: ask.RequestBody, 
+        context: ask.Context, 
+        response: ask.Response
+    ): void {
+        console.log(`[AlexaSkill.IntentRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
+        this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+    }
+
+    handleSessionEndedRequest(
+        event: ask.RequestBody, 
+        context: ask.Context
+    ): void {
+        console.log(`[AlexaSkill.SessionEndedRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
+        this.eventHandlers.onSessionEnded(event.request, event.session);
+        context.succeed();
+    }
+
+    /**
+     * Called when the session starts.
+     * Subclasses could have overriden this function to open any necessary resources.
+     */
+    handleSessionStarted(
+        sessionStartedRequest: any, // not sure which request this is
+        session: ask.Session
+    ): void {
+        let t = this, lc = `AlexaSkill.handleSessionStarted`;
+        h.logFuncStart(lc, `sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`)
+    }
+
+    /**
+     * Called when the user invokes the skill without specifying what they want.
+     * The subclass must override this function and provide feedback to the user.
+     */
+    handleLaunch(
+        launchRequest: ask.LaunchRequest, 
+        session: ask.Session, 
+        response: ResponseClass
+    ): void {
+        throw "onLaunch should be overridden by subclass";
+    }
+
+    eventHandlers: any = {
+        onSessionStarted: this.handleSessionStarted,
+        onLaunch: this.handleLaunch,
 
         /**
          * Called when the user specifies an intent.
