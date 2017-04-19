@@ -1,7 +1,7 @@
 {
   "name": "ask-gib",
-  "version": "0.0.2",
-  "description": "Very small TypeScript-ified Alexa Skills Kit helper library. This is NOT an official package from Amazon. Read the readme for more details.",
+  "version": "0.1.0",
+  "description": "Lightweight TypeScript-ified Alexa Skills Kit helper library. This is NOT an official package from Amazon. Read the readme for more details.",
   "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,7 +18,7 @@
     "amazon"
   ],
   "author": {
-    "name" : "bill-mybiz",
+    "name" : "William Raiford",
     "email" : "ibgib@ibgib.com",
     "url" : "https://github.com/bill-mybiz"
   },

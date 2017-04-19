@@ -75,9 +75,9 @@ export interface AlexaRequest {
 /** String literal with possible values. Used in place of an enum to allow string type. */
 export declare type RequestType = 'LaunchRequest' | 'IntentRequest' | 'SessionEndedRequest';
 export declare const RequestType: {
-    LaunchRequest: "LaunchRequest" | "IntentRequest" | "SessionEndedRequest";
-    IntentRequest: "LaunchRequest" | "IntentRequest" | "SessionEndedRequest";
-    SessionEndedRequest: "LaunchRequest" | "IntentRequest" | "SessionEndedRequest";
+    LaunchRequest: RequestType;
+    IntentRequest: RequestType;
+    SessionEndedRequest: RequestType;
 };
 /** Represents that a user made a request to an Alexa skill, but did not provide a specific intent. */
 export interface LaunchRequest extends AlexaRequest {
@@ -125,9 +125,9 @@ export interface SessionEndedRequest {
 /** String literal with possible values. Used in place of an enum to allow string type. */
 export declare type SessionEndedReason = 'USER_INITIATED' | 'ERROR' | 'EXCEEDED_MAX_REPROMPTS';
 export declare const SessionEndedReason: {
-    USER_INITIATED: "USER_INITIATED" | "ERROR" | "EXCEEDED_MAX_REPROMPTS";
-    ERROR: "USER_INITIATED" | "ERROR" | "EXCEEDED_MAX_REPROMPTS";
-    EXCEEDED_MAX_REPROMPTS: "USER_INITIATED" | "ERROR" | "EXCEEDED_MAX_REPROMPTS";
+    USER_INITIATED: SessionEndedReason;
+    ERROR: SessionEndedReason;
+    EXCEEDED_MAX_REPROMPTS: SessionEndedReason;
 };
 /**
  * Response Body Object
@@ -220,8 +220,8 @@ export interface OutputSpeech {
 export declare type OutputSpeechType = 'PlainText' | 'SSML';
 /** String literal with possible values. Used in place of an enum to allow string type. */
 export declare const OutputSpeechType: {
-    PlainText: "PlainText" | "SSML";
-    SSML: "PlainText" | "SSML";
+    PlainText: OutputSpeechType;
+    SSML: OutputSpeechType;
 };
 /** Object describing a card presented to the user in the Alexa app. */
 export interface Card {
@@ -248,9 +248,9 @@ export interface Card {
 export declare type CardType = 'Simple' | 'Standard' | 'LinkAccount';
 /** String literal with possible values. Used in place of an enum to allow string type. */
 export declare const CardType: {
-    Simple: "Simple" | "Standard" | "LinkAccount";
-    Standard: "Simple" | "Standard" | "LinkAccount";
-    LinkAccount: "Simple" | "Standard" | "LinkAccount";
+    Simple: CardType;
+    Standard: CardType;
+    LinkAccount: CardType;
 };
 /**
  * Allows to specify small and large urls for images in cards.

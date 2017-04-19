@@ -21,18 +21,54 @@ import * as ask from './alexa-skills-kit';
 export declare class AlexaSkill {
     constructor(appId: string);
     _appId: string;
-    requestHandlers: any;
+    requestHandlers: RequestHandlers;
+    handleLaunchRequest(event: ask.RequestBody, context: ask.Context, response: ResponseClass): void;
+    handleIntentRequest(event: ask.RequestBody, context: ask.Context, response: ResponseClass): void;
+    handleSessionEndedRequest(event: ask.RequestBody, context: ask.Context): void;
+    /**
+     * Called when the session starts.
+     * Subclasses could have overriden this function to open any necessary resources.
+     */
+    handleSessionStarted(sessionStartedRequest: any, session: ask.Session): void;
+    /**
+     * Called when the user invokes the skill without specifying what they want.
+     * The subclass must override this function and provide feedback to the user.
+     */
+    handleLaunch(launchRequest: ask.LaunchRequest, session: ask.Session, response: ResponseClass): void;
+    /**
+     * Called when the user specifies an intent.
+     */
+    handleIntent(intentRequest: ask.IntentRequest, session: ask.Session, response: ask.Response): void;
+    /**
+     * Called when the user ends the session.
+     * Subclasses could have overriden this function to close any open resources.
+     */
+    handleSessionEnded(sessionEndedRequest: ask.SessionEndedRequest, session: ask.Session): void;
     eventHandlers: any;
     /**
+     * When an ask.IntentRequest comes in, `handleIntent` is called.
+     * That function looks up a corresponding key in this property per
+     * the intent's name. It then calls that intent handler function,
+     * passing in the intent, session, and response.
+     *
      * Subclasses should override the intentHandlers with the functions to handle specific intents.
      */
-    intentHandlers: any;
+    intentHandlers: IntentHandlers;
     execute(event: ask.RequestBody, context: ask.Context): void;
+}
+/**
+ * See AlexaSkill.intentHandlers
+ */
+export interface IntentHandlers {
+    [key: string]: (intent: ask.Intent, session: ask.Session, response: ask.Response) => void;
+}
+export interface RequestHandlers {
+    [key: string]: ((event: ask.RequestBody, context: ask.Context, response: ResponseClass) => void) | ((event: ask.RequestBody, context: ask.Context) => void);
 }
 export declare class ResponseClass {
     constructor(context: ask.Context, session: ask.Session);
-    _context: ask.Context;
-    _session: ask.Session;
+    private _context;
+    private _session;
     static buildResponseBody(options: ISpeechletResponseOptions): ask.ResponseBody;
     tell({outputSpeech, repromptSpeech, shouldEndSession}: {
         outputSpeech: ask.OutputSpeech;

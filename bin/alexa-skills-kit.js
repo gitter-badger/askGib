@@ -5,6 +5,7 @@
  * Date: 2016/04/01
  */
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestType = {
     LaunchRequest: 'LaunchRequest',
     IntentRequest: 'IntentRequest',

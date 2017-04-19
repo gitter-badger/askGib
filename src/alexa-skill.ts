@@ -40,13 +40,14 @@ export class AlexaSkill {
             } else { 
                 throw new Error(`appId required`); 
             }
+            h.logPriority = 1; // verbose logging by default
         };
         h.gib(f, /*args*/ null, lc);
     }
 
     _appId: string;
 
-    requestHandlers: any = {
+    requestHandlers: RequestHandlers = {
         LaunchRequest: this.handleLaunchRequest,
         IntentRequest: this.handleIntentRequest,
         SessionEndedRequest: this.handleSessionEndedRequest
@@ -55,29 +56,47 @@ export class AlexaSkill {
     handleLaunchRequest(
         event: ask.RequestBody, 
         context: ask.Context, 
-        response: ask.Response
+        response: ResponseClass
     ): void {
-        console.log(`[AlexaSkill.LaunchRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
+        let t = this, lc = `AlexaSkill.handleLaunchRequest`;
+        let f = () => {
+            h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
 
-        this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
+            // I could call t.handleLaunch directly...should I? Hrmm...
+            this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
+        }
+        h.gib(f, /*args*/ null, lc);
     }
 
     handleIntentRequest(
         event: ask.RequestBody, 
         context: ask.Context, 
-        response: ask.Response
+        response: ResponseClass
     ): void {
-        console.log(`[AlexaSkill.IntentRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
-        this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+        let t = this, lc = `AlexaSkill.handleIntentRequest`;
+        let f = () => {
+            h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
+            // I could call t.handleIntent directly...should I? Hrmm...
+            this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+        };
     }
 
     handleSessionEndedRequest(
         event: ask.RequestBody, 
         context: ask.Context
     ): void {
-        console.log(`[AlexaSkill.SessionEndedRequest] event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`);
-        this.eventHandlers.onSessionEnded(event.request, event.session);
-        context.succeed();
+        let t = this, lc = `AlexaSkill.handleSessionEndedRequest`;
+        let f = () => {
+            h.log(
+                `event: ${JSON.stringify(event)}\ncontext: ${JSON.stringify(context)}`, 
+                "info", 
+                /*priority*/ 1,
+                lc
+            );
+            t.eventHandlers.onSessionEnded(event.request, event.session);
+            context.succeed();
+        };
+        h.gib(f, /*args*/ null, lc);
     }
 
     /**
@@ -89,7 +108,7 @@ export class AlexaSkill {
         session: ask.Session
     ): void {
         let t = this, lc = `AlexaSkill.handleSessionStarted`;
-        h.logFuncStart(lc, `sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`)
+        h.log(`sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`, "info", /*priority*/ 1);
     }
 
     /**
@@ -104,40 +123,59 @@ export class AlexaSkill {
         throw "onLaunch should be overridden by subclass";
     }
 
+    /**
+     * Called when the user specifies an intent.
+     */
+    handleIntent(
+        intentRequest: ask.IntentRequest, 
+        session: ask.Session, 
+        response: ask.Response
+    ): void {
+        let t = this, lc = `AlexaSkill.handleIntent`;
+        let f = () => {
+            h.log(`intentRequest: ${JSON.stringify(intentRequest)}`, "info", /*priority*/ 1, lc);
+            let intent = intentRequest.intent,
+                intentName = intentRequest.intent.name,
+                intentHandler = t.intentHandlers[intentName];
+            if (intentHandler) {
+                h.log(`intentName: ${intentName}`, "info", /*priority*/ 0, lc);
+                intentHandler.call(t, intent, session, response);
+            } else {
+                throw `Unsupported intent: ${intentName}`;
+            }
+        }
+        h.gib(f, /*args*/ null, lc);
+    }
+    
+    /**
+     * Called when the user ends the session.
+     * Subclasses could have overriden this function to close any open resources.
+     */
+    handleSessionEnded(
+        sessionEndedRequest: ask.SessionEndedRequest, 
+        session: ask.Session
+    ): void {
+        let t = this, lc = `AlexaSkill.handleSessionEnded`;
+        h.log(`sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`, "info", /*priority*/ 1, lc);
+    }
+
     eventHandlers: any = {
         onSessionStarted: this.handleSessionStarted,
-        onLaunch: this.handleLaunch,
-
-        /**
-         * Called when the user specifies an intent.
-         */
-        onIntent: function (intentRequest: ask.IntentRequest, session: ask.Session, response: ask.Response) {
-            console.log(`[AlexaSkill.onIntent] intentRequest: ${JSON.stringify(intentRequest)}`);
-
-            var intent = intentRequest.intent,
-                intentName = intentRequest.intent.name,
-                intentHandler = this.intentHandlers[intentName];
-            if (intentHandler) {
-                console.log('dispatch intent = ' + intentName);
-                intentHandler.call(this, intent, session, response);
-            } else {
-                throw 'Unsupported intent = ' + intentName;
-            }
-        },
-
-        /**
-         * Called when the user ends the session.
-         * Subclasses could have overriden this function to close any open resources.
-         */
-        onSessionEnded: function (sessionEndedRequest: ask.SessionEndedRequest, session: ask.Session) {
-            console.log(`[AlexaSkill.onSessionEnded] sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`);
-        }
+        onLaunch:         this.handleLaunch,
+        onIntent:         this.handleIntent,
+        onSessionEnded:   this.handleSessionEnded
     };
 
     /**
+     * When an ask.IntentRequest comes in, `handleIntent` is called. 
+     * That function looks up a corresponding key in this property per
+     * the intent's name. It then calls that intent handler function, 
+     * passing in the intent, session, and response.
+     * 
      * Subclasses should override the intentHandlers with the functions to handle specific intents.
      */
-    intentHandlers: any = {};
+    intentHandlers: IntentHandlers
+    // intentHandlers: { [key: string]: (intent, session, response) => void }
 
     execute(event: ask.RequestBody, context: ask.Context) {
         try {
@@ -168,6 +206,22 @@ export class AlexaSkill {
     }
 }
 
+/**
+ * See AlexaSkill.intentHandlers
+ */
+export interface IntentHandlers {
+    [key: string]: (intent: ask.Intent, 
+                    session: ask.Session, 
+                    response: ask.Response) => void
+}
+
+export interface RequestHandlers {
+    [key: string]: ((event: ask.RequestBody, 
+                    context: ask.Context, 
+                    response: ResponseClass) => void) |
+                   ((event: ask.RequestBody, 
+                    context: ask.Context) => void)
+}
 
 export class ResponseClass {
     constructor(context: ask.Context, session: ask.Session) {
@@ -175,10 +229,12 @@ export class ResponseClass {
         this._session = session;
     };
 
-    _context: ask.Context;
-    _session: ask.Session;
+    private _context: ask.Context;
+    private _session: ask.Session;
 
-    static buildResponseBody(options: ISpeechletResponseOptions): ask.ResponseBody {
+    static buildResponseBody(
+        options: ISpeechletResponseOptions
+    ): ask.ResponseBody {
         var alexaResponse: ask.Response = {
             // outputSpeech: Response.createSpeechObject(options.output),
             outputSpeech: options.output,
@@ -250,7 +306,10 @@ export class ResponseClass {
         }));
     }
 
-    ask(outputSpeech: ask.OutputSpeech, repromptSpeech: ask.OutputSpeech) {
+    ask(
+        outputSpeech: ask.OutputSpeech, 
+        repromptSpeech: ask.OutputSpeech
+    ): void {
         this._context.succeed(ResponseClass.buildResponseBody({
             session: this._session,
             output: outputSpeech,
