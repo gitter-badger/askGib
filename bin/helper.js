@@ -181,8 +181,11 @@ class Helper {
      * The `ib` function will create this function but not immediately
      * invoke it.
      * The `gib` function will immediately invoke function `f`.
+     *
+     * Often, I find myself creating closures for `f` and passing null for the args.
+     *
      * @param f Function to execute, wrapped in try/c/f w or w/o logging
-     * @param args Args to pass to function
+     * @param args Args to pass to function. Pass null if no args (e.g. when using a closure.)
      * @param lc Optional log context. Defaults to f.name.
      * @param catchFn Additional catch functionality to logging
      * @param finallyFn Optional `finally` statement
@@ -241,13 +244,17 @@ class Helper {
         return result;
     }
     /**
-     * Wraps a function `f` in a try/catch/(finally) block
-     * with optional tracing.
+     * Wraps a function `f` in a try/catch/(finally) block with
+     * optional tracing.
+     *
      * The `ib` function will create this function but not immediately
      * invoke it.
      * The `gib` function will immediately invoke function `f`.
+     *
+     * Often, I find myself creating closures for `f` and passing null for the args.
+     *
      * @param f Function to execute, wrapped in try/c/f w or w/o logging
-     * @param args Args to pass to function
+     * @param args Args to pass to function. Pass null if no args (e.g. when using a closure.)
      * @param lc Optional log context. Defaults to f.name.
      * @param catchFn Additional catch functionality to logging
      * @param finallyFn Optional `finally` statement

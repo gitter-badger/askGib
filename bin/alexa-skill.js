@@ -33,12 +33,27 @@ class AlexaSkill {
             IntentRequest: this.handleIntentRequest,
             SessionEndedRequest: this.handleSessionEndedRequest
         };
+        /**
+         * These handlers are very similar to Request handlers.
+         * You get the incoming request, and they pretty much map to
+         * an event handler.
+         *
+         */
         this.eventHandlers = {
             onSessionStarted: this.handleSessionStarted,
             onLaunch: this.handleLaunch,
             onIntent: this.handleIntent,
             onSessionEnded: this.handleSessionEnded
         };
+        /**
+         * When an ask.IntentRequest comes in, `handleIntent` is called.
+         * That function looks up a corresponding key in this property per
+         * the intent's name. It then calls that intent handler function,
+         * passing in the intent, session, and response.
+         *
+         * Subclasses should override the intentHandlers with the functions to handle specific intents.
+         */
+        this.intentHandlers = {};
         let t = this, lc = `AlexaSkill.ctor`;
         let f = () => {
             if (appId) {
@@ -62,9 +77,11 @@ class AlexaSkill {
     }
     handleIntentRequest(event, context, response) {
         let t = this, lc = `AlexaSkill.handleIntentRequest`;
-        h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
-        // I could call t.handleIntent directly...should I? Hrmm...
-        this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+        let f = () => {
+            h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
+            // I could call t.handleIntent directly...should I? Hrmm...
+            this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+        };
     }
     handleSessionEndedRequest(event, context) {
         let t = this, lc = `AlexaSkill.handleSessionEndedRequest`;
@@ -118,34 +135,32 @@ class AlexaSkill {
         let t = this, lc = `AlexaSkill.handleSessionEnded`;
         h.log(`sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`, "info", /*priority*/ 1, lc);
     }
-    // intentHandlers: { [key: string]: (intent, session, response) => void }
     execute(event, context) {
-        try {
-            console.log("session applicationId: " + event.session.application.applicationId);
+        let t = this, lc = `AlexaSkill.execute`;
+        let f = () => {
+            h.log(`session applicationId: ${event.session.application.applicationId}`, "info", /*priority*/ 2, lc);
             // Validate that this request originated from authorized source.
             if (this._appId && event.session.application.applicationId !== this._appId) {
-                console.log("The applicationIds don't match : " + event.session.application.applicationId + " and "
-                    + this._appId);
-                throw "Invalid applicationId";
+                let emsg = `Invalid applicationId: ${event.session.application.applicationId}`;
+                throw emsg;
             }
             if (!event.session.attributes) {
                 event.session.attributes = {};
             }
             if (event.session.new) {
-                this.eventHandlers.onSessionStarted(event.request, event.session);
+                t.eventHandlers.onSessionStarted(event.request, event.session);
             }
             // Route the request to the proper handler which may have been overriden.
             var requestHandler = this.requestHandlers[event.request.type];
-            requestHandler.call(this, event, context, new ResponseClass(context, event.session));
-        }
-        catch (e) {
-            console.log("Unexpected exception " + e);
-            context.fail(e);
-        }
+            requestHandler.call(this, event, context, new ResponseHelper(context, event.session));
+        };
+        h.gib(f, 
+        /*args*/ null, lc, 
+        /*catchFn*/ (e) => context.fail(e));
     }
 }
 exports.AlexaSkill = AlexaSkill;
-class ResponseClass {
+class ResponseHelper {
     constructor(context, session) {
         this._context = context;
         this._session = session;
@@ -180,7 +195,7 @@ class ResponseClass {
     }
     ;
     tell({ outputSpeech, repromptSpeech, shouldEndSession = true }) {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -188,7 +203,7 @@ class ResponseClass {
         }));
     }
     tellWithCard({ outputSpeech, repromptSpeech, cardTitle, cardContent, shouldEndSession = true }) {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -198,7 +213,7 @@ class ResponseClass {
         }));
     }
     ask(outputSpeech, repromptSpeech) {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -206,7 +221,7 @@ class ResponseClass {
         }));
     }
     askWithCard({ outputSpeech, repromptSpeech, cardTitle, cardContent }) {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -216,4 +231,4 @@ class ResponseClass {
         }));
     }
 }
-exports.ResponseClass = ResponseClass;
+exports.ResponseHelper = ResponseHelper;

@@ -56,7 +56,7 @@ export class AlexaSkill {
     handleLaunchRequest(
         event: ask.RequestBody, 
         context: ask.Context, 
-        response: ResponseClass
+        response: ResponseHelper
     ): void {
         let t = this, lc = `AlexaSkill.handleLaunchRequest`;
         let f = () => {
@@ -71,7 +71,7 @@ export class AlexaSkill {
     handleIntentRequest(
         event: ask.RequestBody, 
         context: ask.Context, 
-        response: ResponseClass
+        response: ResponseHelper
     ): void {
         let t = this, lc = `AlexaSkill.handleIntentRequest`;
         let f = () => {
@@ -118,7 +118,7 @@ export class AlexaSkill {
     handleLaunch(
         launchRequest: ask.LaunchRequest, 
         session: ask.Session, 
-        response: ResponseClass
+        response: ResponseHelper
     ): void {
         throw "onLaunch should be overridden by subclass";
     }
@@ -129,7 +129,7 @@ export class AlexaSkill {
     handleIntent(
         intentRequest: ask.IntentRequest, 
         session: ask.Session, 
-        response: ask.Response
+        response: ResponseHelper
     ): void {
         let t = this, lc = `AlexaSkill.handleIntent`;
         let f = () => {
@@ -159,7 +159,13 @@ export class AlexaSkill {
         h.log(`sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`, "info", /*priority*/ 1, lc);
     }
 
-    eventHandlers: any = {
+    /**
+     * These handlers are very similar to Request handlers.
+     * You get the incoming request, and they pretty much map to 
+     * an event handler.
+     * 
+     */
+    eventHandlers: EventHandlers = {
         onSessionStarted: this.handleSessionStarted,
         onLaunch:         this.handleLaunch,
         onIntent:         this.handleIntent,
@@ -174,18 +180,20 @@ export class AlexaSkill {
      * 
      * Subclasses should override the intentHandlers with the functions to handle specific intents.
      */
-    intentHandlers: IntentHandlers
-    // intentHandlers: { [key: string]: (intent, session, response) => void }
+    intentHandlers: IntentHandlers = {};
 
-    execute(event: ask.RequestBody, context: ask.Context) {
-        try {
-            console.log("session applicationId: " + event.session.application.applicationId);
+    execute(
+        event: ask.RequestBody, 
+        context: ask.Context
+    ): void {
+        let t = this, lc = `AlexaSkill.execute`;
+        let f = () => {
+            h.log(`session applicationId: ${event.session.application.applicationId}`, "info", /*priority*/ 2, lc);
 
             // Validate that this request originated from authorized source.
             if (this._appId && event.session.application.applicationId !== this._appId) {
-                console.log("The applicationIds don't match : " + event.session.application.applicationId + " and "
-                    + this._appId);
-                throw "Invalid applicationId";
+                let emsg = `Invalid applicationId: ${event.session.application.applicationId}`;
+                throw emsg;
             }
 
             if (!event.session.attributes) {
@@ -193,37 +201,41 @@ export class AlexaSkill {
             }
 
             if (event.session.new) {
-                this.eventHandlers.onSessionStarted(event.request, event.session);
+                t.eventHandlers.onSessionStarted(event.request, event.session);
             }
 
             // Route the request to the proper handler which may have been overriden.
             var requestHandler = this.requestHandlers[event.request.type];
-            requestHandler.call(this, event, context, new ResponseClass(context, event.session));
-        } catch (e) {
-            console.log("Unexpected exception " + e);
-            context.fail(e);
+            requestHandler.call(this, event, context, new ResponseHelper(context, event.session));
         }
+        h.gib(f, 
+              /*args*/ null, 
+              lc, 
+              /*catchFn*/ (e) => context.fail(e))
     }
 }
 
+export interface EventHandlers {
+    [key: string]: (request: ask.AlexaRequest,
+                    session: ask.Session, 
+                    response?: ResponseHelper) => void
+}
 /**
  * See AlexaSkill.intentHandlers
  */
 export interface IntentHandlers {
     [key: string]: (intent: ask.Intent, 
                     session: ask.Session, 
-                    response: ask.Response) => void
+                    response: ResponseHelper) => void
 }
 
 export interface RequestHandlers {
-    [key: string]: ((event: ask.RequestBody, 
+    [key: string]: (event: ask.RequestBody, 
                     context: ask.Context, 
-                    response: ResponseClass) => void) |
-                   ((event: ask.RequestBody, 
-                    context: ask.Context) => void)
+                    response?: ResponseHelper) => void
 }
 
-export class ResponseClass {
+export class ResponseHelper {
     constructor(context: ask.Context, session: ask.Session) {
         this._context = context;
         this._session = session;
@@ -274,7 +286,7 @@ export class ResponseClass {
         repromptSpeech?: ask.OutputSpeech,
         shouldEndSession?: boolean
     }): void {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -296,7 +308,7 @@ export class ResponseClass {
         cardContent: string,
         shouldEndSession?: boolean
     }): void {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -310,7 +322,7 @@ export class ResponseClass {
         outputSpeech: ask.OutputSpeech, 
         repromptSpeech: ask.OutputSpeech
     ): void {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
@@ -329,7 +341,7 @@ export class ResponseClass {
         cardTitle: string,
         cardContent: string
     }): void {
-        this._context.succeed(ResponseClass.buildResponseBody({
+        this._context.succeed(ResponseHelper.buildResponseBody({
             session: this._session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,

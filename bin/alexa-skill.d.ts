@@ -22,8 +22,8 @@ export declare class AlexaSkill {
     constructor(appId: string);
     _appId: string;
     requestHandlers: RequestHandlers;
-    handleLaunchRequest(event: ask.RequestBody, context: ask.Context, response: ResponseClass): void;
-    handleIntentRequest(event: ask.RequestBody, context: ask.Context, response: ResponseClass): void;
+    handleLaunchRequest(event: ask.RequestBody, context: ask.Context, response: ResponseHelper): void;
+    handleIntentRequest(event: ask.RequestBody, context: ask.Context, response: ResponseHelper): void;
     handleSessionEndedRequest(event: ask.RequestBody, context: ask.Context): void;
     /**
      * Called when the session starts.
@@ -34,17 +34,23 @@ export declare class AlexaSkill {
      * Called when the user invokes the skill without specifying what they want.
      * The subclass must override this function and provide feedback to the user.
      */
-    handleLaunch(launchRequest: ask.LaunchRequest, session: ask.Session, response: ResponseClass): void;
+    handleLaunch(launchRequest: ask.LaunchRequest, session: ask.Session, response: ResponseHelper): void;
     /**
      * Called when the user specifies an intent.
      */
-    handleIntent(intentRequest: ask.IntentRequest, session: ask.Session, response: ask.Response): void;
+    handleIntent(intentRequest: ask.IntentRequest, session: ask.Session, response: ResponseHelper): void;
     /**
      * Called when the user ends the session.
      * Subclasses could have overriden this function to close any open resources.
      */
     handleSessionEnded(sessionEndedRequest: ask.SessionEndedRequest, session: ask.Session): void;
-    eventHandlers: any;
+    /**
+     * These handlers are very similar to Request handlers.
+     * You get the incoming request, and they pretty much map to
+     * an event handler.
+     *
+     */
+    eventHandlers: EventHandlers;
     /**
      * When an ask.IntentRequest comes in, `handleIntent` is called.
      * That function looks up a corresponding key in this property per
@@ -56,16 +62,19 @@ export declare class AlexaSkill {
     intentHandlers: IntentHandlers;
     execute(event: ask.RequestBody, context: ask.Context): void;
 }
+export interface EventHandlers {
+    [key: string]: (request: ask.AlexaRequest, session: ask.Session, response?: ResponseHelper) => void;
+}
 /**
  * See AlexaSkill.intentHandlers
  */
 export interface IntentHandlers {
-    [key: string]: (intent: ask.Intent, session: ask.Session, response: ask.Response) => void;
+    [key: string]: (intent: ask.Intent, session: ask.Session, response: ResponseHelper) => void;
 }
 export interface RequestHandlers {
-    [key: string]: ((event: ask.RequestBody, context: ask.Context, response: ResponseClass) => void) | ((event: ask.RequestBody, context: ask.Context) => void);
+    [key: string]: (event: ask.RequestBody, context: ask.Context, response?: ResponseHelper) => void;
 }
-export declare class ResponseClass {
+export declare class ResponseHelper {
     constructor(context: ask.Context, session: ask.Session);
     private _context;
     private _session;
