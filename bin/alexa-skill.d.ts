@@ -29,7 +29,7 @@ export declare class AlexaSkill {
      * Called when the session starts.
      * Subclasses could have overriden this function to open any necessary resources.
      */
-    handleSessionStarted(sessionStartedRequest: any, session: ask.Session): void;
+    handleSessionStarted(request: ask.AlexaRequest, session: ask.Session): void;
     /**
      * Called when the user invokes the skill without specifying what they want.
      * The subclass must override this function and provide feedback to the user.
@@ -43,7 +43,7 @@ export declare class AlexaSkill {
      * Called when the user ends the session.
      * Subclasses could have overriden this function to close any open resources.
      */
-    handleSessionEnded(sessionEndedRequest: ask.SessionEndedRequest, session: ask.Session): void;
+    handleSessionEnded(request: ask.SessionEndedRequest, session: ask.Session): void;
     /**
      * These handlers are very similar to Request handlers.
      * You get the incoming request, and they pretty much map to

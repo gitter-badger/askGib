@@ -5,3 +5,5 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./alexa-skill"));
 __export(require("./alexa-skills-kit"));
+__export(require("./funcy-alexa-skill"));
+__export(require("./helper"));

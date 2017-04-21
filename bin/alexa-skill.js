@@ -97,17 +97,16 @@ class AlexaSkill {
      * Called when the session starts.
      * Subclasses could have overriden this function to open any necessary resources.
      */
-    handleSessionStarted(sessionStartedRequest, // not sure which request this is
-        session) {
+    handleSessionStarted(request, session) {
         let t = this, lc = `AlexaSkill.handleSessionStarted`;
-        h.log(`sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`, "info", /*priority*/ 1);
+        h.log(`requestId: ${request.requestId}\nsessionId: ${session.sessionId}`, "info", /*priority*/ 1);
     }
     /**
      * Called when the user invokes the skill without specifying what they want.
      * The subclass must override this function and provide feedback to the user.
      */
     handleLaunch(launchRequest, session, response) {
-        throw "onLaunch should be overridden by subclass";
+        throw "handleLaunch should be overridden by subclass";
     }
     /**
      * Called when the user specifies an intent.
@@ -131,9 +130,9 @@ class AlexaSkill {
      * Called when the user ends the session.
      * Subclasses could have overriden this function to close any open resources.
      */
-    handleSessionEnded(sessionEndedRequest, session) {
+    handleSessionEnded(request, session) {
         let t = this, lc = `AlexaSkill.handleSessionEnded`;
-        h.log(`sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`, "info", /*priority*/ 1, lc);
+        h.log(`sessionEndedRequest: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
     }
     execute(event, context) {
         let t = this, lc = `AlexaSkill.execute`;

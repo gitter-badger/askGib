@@ -87,7 +87,7 @@ class Helper {
     logError(errName, error, lc, priority = 2, addlMsg = null) {
         let msg = addlMsg ?
             `${addlMsg}>> ${errName}: ${error.message}` :
-            `${errName}: ${error.message}`;
+            `${errName}: ${error.message ? error.message : JSON.stringify(error)}`;
         this.log(msg, 'error', priority, lc);
     }
     get MSG_FUNC_START() { return `Starting...`; }
@@ -193,55 +193,82 @@ class Helper {
      * @param withTrace Log start/complete of f, overridden by window.ibTraceAll
      */
     ib(f, args, lc, catchFn, finallyFn, rethrow = true, withTrace = true) {
-        let argsString = args && args.length ?
-            args.reduce((a, b) => JSON.stringify(a) + ", " + JSON.stringify(b)) :
-            '';
-        lc = lc || `${f.name}(${argsString})`;
-        let result;
-        let t = this;
-        if (withTrace || window.ibTraceAll) {
-            result = () => {
-                t.logFuncStart(lc);
-                try {
-                    return f.apply(this, args);
-                }
-                catch (e) {
-                    t.logError(`errFunc`, e, lc);
-                    if (rethrow) {
-                        throw e;
+        let t = this, lcIb = `Helper.ibOrGib`;
+        try {
+            let argsString = args && args.length ?
+                args.reduce((a, b) => JSON.stringify(a) + ", " + JSON.stringify(b)) :
+                '';
+            if (f && f.name) {
+                lc = lc || `${f.name}(${argsString})`;
+            }
+            else {
+                lc = lc || lcIb;
+            }
+            if (!f) {
+                throw `function f is falsy yo.`;
+            }
+            let result;
+            if (withTrace || window.ibTraceAll) {
+                result = () => {
+                    t.logFuncStart(lc);
+                    try {
+                        return f.apply(this, args);
                     }
-                }
-                finally {
-                    t.logFuncComplete(lc);
-                    if (finallyFn) {
-                        finallyFn();
+                    catch (errF) {
+                        t.logError(`errF`, errF, lc);
+                        if (catchFn) {
+                            catchFn(errF);
+                        }
+                        if (rethrow) {
+                            throw errF;
+                        }
                     }
-                }
-            };
+                    finally {
+                        if (finallyFn) {
+                            finallyFn();
+                        }
+                        t.logFuncComplete(lc);
+                    }
+                };
+            }
+            else {
+                result = () => {
+                    try {
+                        return f.apply(this, args);
+                    }
+                    catch (errF) {
+                        t.logError(`errF`, errF, lc);
+                        if (catchFn) {
+                            catchFn(errF);
+                        }
+                        if (rethrow) {
+                            throw errF;
+                        }
+                    }
+                    finally {
+                        if (finallyFn) {
+                            finallyFn();
+                        }
+                    }
+                };
+            }
+            Object.defineProperty(result, "name", { value: f.name });
+            return result;
         }
-        else {
-            result = () => {
-                try {
-                    return f.apply(this, args);
-                }
-                catch (e) {
-                    console.error(`${lc} error: ${e.message}`);
-                    if (catchFn) {
-                        catchFn(e);
-                    }
-                    else if (rethrow) {
-                        throw e;
-                    }
-                }
-                finally {
-                    if (finallyFn) {
-                        finallyFn();
-                    }
-                }
-            };
+        catch (errFunc) {
+            t.logError(`errFunc`, errFunc, lc);
+            if (catchFn) {
+                catchFn(errFunc);
+            }
+            if (rethrow) {
+                throw errFunc;
+            }
         }
-        Object.defineProperty(result, "name", { value: f.name });
-        return result;
+        finally {
+            if (finallyFn) {
+                finallyFn();
+            }
+        }
     }
     /**
      * Wraps a function `f` in a try/catch/(finally) block with

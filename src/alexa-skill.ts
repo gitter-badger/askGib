@@ -104,11 +104,11 @@ export class AlexaSkill {
      * Subclasses could have overriden this function to open any necessary resources.
      */
     handleSessionStarted(
-        sessionStartedRequest: any, // not sure which request this is
+        request: ask.AlexaRequest,
         session: ask.Session
     ): void {
         let t = this, lc = `AlexaSkill.handleSessionStarted`;
-        h.log(`sessionStartedRequest: ${JSON.stringify(sessionStartedRequest)}`, "info", /*priority*/ 1);
+        h.log(`requestId: ${request.requestId}\nsessionId: ${session.sessionId}`, "info", /*priority*/ 1);
     }
 
     /**
@@ -120,7 +120,7 @@ export class AlexaSkill {
         session: ask.Session, 
         response: ResponseHelper
     ): void {
-        throw "onLaunch should be overridden by subclass";
+        throw "handleLaunch should be overridden by subclass";
     }
 
     /**
@@ -152,11 +152,11 @@ export class AlexaSkill {
      * Subclasses could have overriden this function to close any open resources.
      */
     handleSessionEnded(
-        sessionEndedRequest: ask.SessionEndedRequest, 
+        request: ask.SessionEndedRequest, 
         session: ask.Session
     ): void {
         let t = this, lc = `AlexaSkill.handleSessionEnded`;
-        h.log(`sessionEndedRequest: ${JSON.stringify(sessionEndedRequest)}`, "info", /*priority*/ 1, lc);
+        h.log(`sessionEndedRequest: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
     }
 
     /**

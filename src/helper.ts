@@ -145,7 +145,7 @@ export class Helper implements IHelper {
     logError(errName: string, error: any, lc: string, priority: number = 2, addlMsg: string = null) {
         let msg = addlMsg ?
             `${addlMsg}>> ${errName}: ${error.message}` :
-            `${errName}: ${error.message}`;
+            `${errName}: ${error.message ? error.message : JSON.stringify(error)}`;
 
         this.log(msg, 'error', priority, lc);
     }
@@ -279,47 +279,60 @@ export class Helper implements IHelper {
         rethrow: boolean = true,
         withTrace: boolean = true
     ): any {
-        let argsString = 
-            args && args.length ? 
-            args.reduce((a, b) => JSON.stringify(a) + ", " + JSON.stringify(b)) : 
-            '';
-        lc = lc || `${f.name}(${argsString})`;
-        let result;
-        let t = this;
+        let t = this, lcIb = `Helper.ibOrGib`;
+        try {
+            let argsString = 
+                args && args.length ? 
+                args.reduce((a, b) => JSON.stringify(a) + ", " + JSON.stringify(b)) : 
+                '';
+            if (f && f.name) {
+                lc = lc || `${f.name}(${argsString})`;
+            } else {
+                lc = lc || lcIb;
+            }
+            if (!f) { throw `function f is falsy yo.`}
+            
+            let result;
 
-        if (withTrace || (<any>window).ibTraceAll) {
-            result = () => {
-                t.logFuncStart(lc);
-                try {
-                    return f.apply(this, args);
-                } catch (e) {
-                    t.logError(`errFunc`, e, lc);
-                    if (rethrow) { throw e; }
-                } finally {
-                    t.logFuncComplete(lc);
-                    if (finallyFn) { finallyFn(); }
-                }
-            }
-        } else {
-            result = () => {
-                try {
-                    return f.apply(this, args);
-                } catch (e) {
-                    console.error(`${lc} error: ${e.message}`);
-                    if (catchFn) { 
-                        catchFn(e); 
-                    } else if (rethrow) {
-                        throw e;
+            if (withTrace || (<any>window).ibTraceAll) {
+                result = () => {
+                    t.logFuncStart(lc);
+                    try {
+                        return f.apply(this, args);
+                    } catch (errF) {
+                        t.logError(`errF`, errF, lc);
+                        if (catchFn) { catchFn(errF); }
+                        if (rethrow) { throw errF; }
+                    } finally {
+                        if (finallyFn) { finallyFn(); }
+                        t.logFuncComplete(lc);
                     }
-                } finally {
-                    if (finallyFn) { finallyFn(); }
+                }
+            } else {
+                result = () => {
+                    try {
+                        return f.apply(this, args);
+                    } catch (errF) {
+                        t.logError(`errF`, errF, lc);
+                        if (catchFn) { catchFn(errF); }
+                        if (rethrow) { throw errF; }
+                    } finally {
+                        if (finallyFn) { finallyFn(); }
+                    }
                 }
             }
+            
+            Object.defineProperty(result, "name", { value: f.name });
+            
+            return result;
+
+        } catch (errFunc) {
+            t.logError(`errFunc`, errFunc, lc);
+            if (catchFn) { catchFn(errFunc); }
+            if (rethrow) { throw errFunc; }
+        } finally {
+            if (finallyFn) { finallyFn(); }
         }
-        
-        Object.defineProperty(result, "name", { value: f.name });
-        
-        return result;
     }
 
     /**

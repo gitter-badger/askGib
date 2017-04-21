@@ -14,6 +14,9 @@ import * as ask from './alexa-skills-kit';
  * the rigor of having to map transitions from one state to the
  * next. I _think_ an FSM could actually be built on top of this,
  * i.e. via a descending class.
+ *
+ * So to use this thing, you do everything the same as with the base
+ * `AlexaSkill` class, with the difference of the intent handlers.
  */
 export declare class FuncyAlexaSkill extends AlexaSkill {
     /**
@@ -21,14 +24,35 @@ export declare class FuncyAlexaSkill extends AlexaSkill {
      * intents and use the funcy skill state mechanism.
      * The `intentHandlers` property is no longer used.
      */
-    handleIntent(intentRequest: ask.IntentRequest, session: ask.Session, response: ResponseHelper): void;
-    transformsByIntentName: TransformsByIntentName;
+    handleIntentOrLaunchRequest(request: (ask.IntentRequest | ask.LaunchRequest), session: ask.Session, response: ResponseHelper): void;
+    /**
+     */
+    handleIntent(request: ask.IntentRequest, session: ask.Session, response: ResponseHelper): void;
+    /**
+     */
+    handleLaunch(request: ask.LaunchRequest, session: ask.Session, response: ResponseHelper): void;
+    /**
+     * The name is usually the intent name, however transforms can also
+     * be stored/triggered via other things like a LaunchRequest.
+     *
+     * The launch request name is retrieved via `getLaunchRequestName`.
+     * Override this if you want a different name used.
+     */
+    transformsByName: TransformsByName;
+    getLaunchRequestName(): string;
+    /**
+     * By default, this examines the interaction and does the
+     * appropriate call on the response helper object.
+     *
+     * @param interaction The interaction that we're responding with.
+     * @param response The response helper that we're going to use to trigger the response.
+     */
     respond(interaction: Interaction, response: ResponseHelper): void;
 }
 /**
  * Transform
  */
-export interface TransformsByIntentName {
+export interface TransformsByName {
     [key: string]: SkillTransform[];
 }
 /**
@@ -99,6 +123,7 @@ export interface Stimulus {
     name: string;
     origin: StimulusOrigin;
     intent?: ask.Intent;
+    launchRequest?: ask.LaunchRequest;
 }
 export declare type StimulusOrigin = "user";
 export declare const StimulusOrigin: {

@@ -21,34 +21,59 @@ let h = new help.Helper();
  * the rigor of having to map transitions from one state to the
  * next. I _think_ an FSM could actually be built on top of this,
  * i.e. via a descending class.
+ *
+ * So to use this thing, you do everything the same as with the base
+ * `AlexaSkill` class, with the difference of the intent handlers.
  */
 class FuncyAlexaSkill extends alexa_skill_1.AlexaSkill {
     constructor() {
         super(...arguments);
-        this.transformsByIntentName = {};
+        /**
+         * The name is usually the intent name, however transforms can also
+         * be stored/triggered via other things like a LaunchRequest.
+         *
+         * The launch request name is retrieved via `getLaunchRequestName`.
+         * Override this if you want a different name used.
+         */
+        this.transformsByName = {};
     }
     /**
      * This overrides the base class's handleIntent in order to wrap
      * intents and use the funcy skill state mechanism.
      * The `intentHandlers` property is no longer used.
      */
-    handleIntent(intentRequest, session, response) {
-        let t = this, lc = `AlexaSkill.handleIntent`;
+    handleIntentOrLaunchRequest(request, session, response) {
+        let t = this, lc = `AlexaSkill.handleIntentOrLaunchRequest`;
         let f = () => {
-            h.log(`intentRequest: ${JSON.stringify(intentRequest)}`, "info", /*priority*/ 1, lc);
-            let intent = intentRequest.intent, intentName = intentRequest.intent.name, transforms = t.transformsByIntentName[intentName];
-            let stimulus = {
-                name: intent.name,
-                origin: "user",
-                intent: intent
-            };
+            h.log(`request: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
+            let intent, name, transforms, stimulus;
+            if (isIntentRequest(request)) {
+                intent = request.intent;
+                name = intent.name;
+                stimulus = {
+                    name: name,
+                    origin: "user",
+                    intent: intent
+                };
+                transforms = t.transformsByName[name];
+            }
+            else {
+                intent = null;
+                name = t.getLaunchRequestName();
+                stimulus = {
+                    name: name,
+                    origin: "user",
+                    launchRequest: request
+                };
+                transforms = t.transformsByName[name];
+            }
             session.attributes.history =
                 session.attributes.history || [];
             let history = session.attributes.history;
             if (transforms) {
-                h.log(`intentName: ${intentName}`, "info", /*priority*/ 0, lc);
+                h.log(`name: ${name}`, "info", /*priority*/ 0, lc);
                 // Iterate through the transforms. The one that 
-                // applies to the given stimulus and prev state will
+                // applies to the given stimulus and history will
                 // return the next, non-null SkillState. Those that 
                 // do not apply will return null.
                 let nextSkillState = transforms.reduce((skillTransform, resultState) => resultState ?
@@ -64,11 +89,31 @@ class FuncyAlexaSkill extends alexa_skill_1.AlexaSkill {
                 }
             }
             else {
-                throw `Unknown intentName: ${intentName}`;
+                throw `Unknown intentName: ${name}`;
             }
         };
         h.gib(f, /*args*/ null, lc);
     }
+    /**
+     */
+    handleIntent(request, session, response) {
+        let t = this;
+        t.handleIntentOrLaunchRequest(request, session, response);
+    }
+    /**
+     */
+    handleLaunch(request, session, response) {
+        let t = this;
+        t.handleIntentOrLaunchRequest(request, session, response);
+    }
+    getLaunchRequestName() { return "WelcomeIntent"; }
+    /**
+     * By default, this examines the interaction and does the
+     * appropriate call on the response helper object.
+     *
+     * @param interaction The interaction that we're responding with.
+     * @param response The response helper that we're going to use to trigger the response.
+     */
     respond(interaction, response) {
         let t = this, lc = `FuncyAlexaSkill.respond`;
         let f = () => {
@@ -107,6 +152,17 @@ class FuncyAlexaSkill extends alexa_skill_1.AlexaSkill {
     }
 }
 exports.FuncyAlexaSkill = FuncyAlexaSkill;
+/**
+ * A launch request will require a welcome request often, so this user
+ * defined guard is used above. This is so we can share the transform
+ * architecture without absolutely requiring that we're working from
+ * within an IntentRequest.
+ *
+ * @param request incoming request
+ */
+function isIntentRequest(request) {
+    return request.intent !== undefined;
+}
 exports.InteractionType = {
     ask: 'ask',
     tell: 'tell'
