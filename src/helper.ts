@@ -362,7 +362,7 @@ export class Helper implements IHelper {
         rethrow: boolean = true,
         withTrace: boolean = true
     ): any {
-        this.ib(f, args, lc, catchFn, finallyFn, rethrow, withTrace).call(this);
+        return this.ib(f, args, lc, catchFn, finallyFn, rethrow, withTrace).call(this);
     }
 
     // ---------------------------------------

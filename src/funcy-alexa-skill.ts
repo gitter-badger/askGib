@@ -78,15 +78,18 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 // return the next, non-null SkillState. Those that 
                 // do not apply will return null.
                 let nextSkillState = transforms.reduce(
-                    (skillTransform, resultState) => 
-                        resultState ? 
-                        resultState : 
-                        skillTransform.call(t, 
-                                            stimulus,
-                                            history), 
-                    null
-                );
+                    (resultState, skillTransform) => {
+                        h.log(`resultState before: ${JSON.stringify(resultState)}`, "debug", 1, lc);
+                        resultState = 
+                            resultState || 
+                            h.gib(skillTransform, [stimulus, history]);
+                            h.log("yoooooo", "debug", 0, lc);
+                            // skillTransform.call(t, stimulus, history);
+                        h.log(`resultState after: ${JSON.stringify(resultState)}`, "debug", 1, lc);
+                        return resultState;
+                    }, <SkillState>null); // initial resultState
                 if (nextSkillState) {
+                    h.log(`nextSkillState: ${JSON.stringify(nextSkillState)}`, "debug", 1, lc);
                     history.push(nextSkillState);
                     session.attributes.history = history;
                     t.respond(nextSkillState.interaction, response);
