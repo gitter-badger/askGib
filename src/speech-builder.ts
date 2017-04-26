@@ -22,6 +22,7 @@ export class SpeechBuilder {
     constructor() {
         let t = this, lc = `${t.constructor.name}.ctor`;
 
+        h.log(`t: ${JSON.stringify(t)}`, "debug", 0, lc);
         h.wrapFuncs(
             t, 
             [
@@ -34,6 +35,12 @@ export class SpeechBuilder {
     }
 
     private _bits: SpeechBit[] = [];
+
+    /**
+     * Just a simple static function for fluent-style reading.
+     * This just news up an instance of this class.
+     */
+    static adding() { return new SpeechBuilder(); }
 
     text(text: string): SpeechBuilder {
         let t = this;
@@ -66,8 +73,9 @@ export class SpeechBuilder {
     }
 
     outputSpeech(): ask.OutputSpeech {
-        let t = this;
+        let t = this, lc = `outputSpeech`;
         let text = "", ssml = "";
+        h.log(`bits: ${JSON.stringify(t._bits)}`, "debug", 0, lc);
         t._bits.forEach(bit => {
             switch (bit.type) {
                 case "text":
@@ -87,11 +95,15 @@ export class SpeechBuilder {
             }
         })
 
+        h.log(`text: ${JSON.stringify(text)}`, "debug", 0, lc);
+        h.log(`ssml: ${JSON.stringify(ssml)}`, "debug", 0, lc);
         let output: ask.OutputSpeech = {
             type: ask.OutputSpeechType.SSML,
             text: text,
             ssml: ssml
         }
+
+        h.log(`output: ${JSON.stringify(output)}`, "debug", 0, lc);
 
         return output;
     }

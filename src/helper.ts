@@ -242,6 +242,15 @@ export class Helper implements IHelper {
         return text;
     }
 
+    randomItem<T>(array: Array<T>): T {
+        if (!array) { throw new Error('array required'); }
+        if (array.length === 0) {
+            return null;
+        } else {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+    }
+
     wrapSsmlSpeak(paras: string[]): string {
         let result = 
             "<speak>" + 
@@ -375,9 +384,10 @@ export class Helper implements IHelper {
      */
     wrapFuncs(obj: Object, funcNames: string[]): void {
         let t = this;
+
+        t.log("wrap funcs whaaaa", "debug", 0, "wrapFuncs huh");
         funcNames.forEach(funcName => {
-            let f = t[funcName];
-            t.wrapFunc(f, funcName);
+            t.wrapFunc(obj, funcName);
         });
     }
     /**
@@ -397,6 +407,7 @@ export class Helper implements IHelper {
         let fn: Function = obj[fnName];
         if (!fn) { throw new Error(`invalid fnName: ${fnName}. Not found on object.`)}
         let lc = obj.constructor.name + "." + fnName;
+        t.log(`yo wrap funnnncy`, "debug", 0, lc);
         obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
     }
 
