@@ -110,7 +110,8 @@ export class FuncyAlexaSkill extends AlexaSkill {
         session: ask.Session, 
         response: ResponseHelper
     ): void {
-        let t = this;
+        let t = this, lc = `FuncyAlexaSkill.handleIntent`;
+        h.log(`handling intent yo...`, "info", 0, lc);
         t.handleIntentOrLaunchRequest(request, session, response);
     }
 

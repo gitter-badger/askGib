@@ -79,6 +79,7 @@ export class AlexaSkill {
             // I could call t.handleIntent directly...should I? Hrmm...
             this.eventHandlers.onIntent.call(this, event.request, event.session, response);
         };
+        h.gib(f, /*args*/ null, lc);
     }
 
     handleSessionEndedRequest(
@@ -108,7 +109,9 @@ export class AlexaSkill {
         session: ask.Session
     ): void {
         let t = this, lc = `AlexaSkill.handleSessionStarted`;
-        h.log(`requestId: ${request.requestId}\nsessionId: ${session.sessionId}`, "info", /*priority*/ 1);
+     
+        h.log(`sessionId: ${session.sessionId}`, "info", /*priority*/ 1, lc);
+        h.log(`requestId: ${request.requestId}`, "info", /*priority*/ 1, lc);
     }
 
     /**
@@ -206,7 +209,12 @@ export class AlexaSkill {
 
             // Route the request to the proper handler which may have been overriden.
             var requestHandler = this.requestHandlers[event.request.type];
-            requestHandler.call(this, event, context, new ResponseHelper(context, event.session));
+            h.log(`event.request.type: ${event.request.type}`, "debug", 0, lc);
+            if (requestHandler) {
+                requestHandler.call(this, event, context, new ResponseHelper(context, event.session));
+            } else {
+                h.log(`requestHandler is falsy.`, "error", 0, lc);
+            }
         }
         h.gib(f, 
               /*args*/ null, 
