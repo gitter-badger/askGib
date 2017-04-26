@@ -271,6 +271,7 @@ export class Helper implements IHelper {
      * @param withTrace Log start/complete of f, overridden by window.ibTraceAll
      */
     ib(
+        fThis: any,
         f: Function, 
         args: any[], 
         lc?: string, 
@@ -280,6 +281,7 @@ export class Helper implements IHelper {
         withTrace: boolean = true
     ): any {
         let t = this, lcIb = `Helper.ibOrGib`;
+        fThis = fThis || t;
         try {
             let argsString = 
                 args && args.length ? 
@@ -298,7 +300,7 @@ export class Helper implements IHelper {
                 result = () => {
                     t.logFuncStart(lc);
                     try {
-                        return f.apply(this, args);
+                        return f.apply(fThis, args);
                     } catch (errF) {
                         t.logError(`errF`, errF, lc);
                         if (catchFn) { catchFn(errF); }
@@ -311,7 +313,7 @@ export class Helper implements IHelper {
             } else {
                 result = () => {
                     try {
-                        return f.apply(this, args);
+                        return f.apply(fThis, args);
                     } catch (errF) {
                         t.logError(`errF`, errF, lc);
                         if (catchFn) { catchFn(errF); }
@@ -354,6 +356,7 @@ export class Helper implements IHelper {
      * @param withTrace Log start/complete of f, overridden by window.ibTraceAll
      */
     gib(
+        fThis: any,
         f: Function, 
         args: any[], 
         lc?: string, 
@@ -362,7 +365,39 @@ export class Helper implements IHelper {
         rethrow: boolean = true,
         withTrace: boolean = true
     ): any {
-        return this.ib(f, args, lc, catchFn, finallyFn, rethrow, withTrace).call(this);
+        return this.ib(fThis, f, args, lc, catchFn, finallyFn, rethrow, withTrace).call(this);
+    }
+
+    /**
+     * Wraps the given object's functions corresponding to `funcNames` with 
+     * @param obj 
+     * @param funcNames 
+     */
+    wrapFuncs(obj: Object, funcNames: string[]): void {
+        let t = this;
+        funcNames.forEach(funcName => {
+            let f = t[funcName];
+            t.wrapFunc(f, funcName);
+        });
+    }
+    /**
+     * I'm still playing with learning JS (and es6) stuff, so I'm 
+     * adding functions dynamically and doing the wrapping here in 
+     * this small builder class.
+     * 
+     * So this addFunc takes a function, uses its name to generate the
+     * lc (log context), and then calls h.gib on the function. _That_
+     * function wraps it in a try/catch with trace logging using the lc.
+     * 
+     * @param fn should be named with trailing Fn, so a function foo would be fooFn. Else use fnName
+     * @param fnName 
+     */
+    wrapFunc(obj: Object, fnName: string) {
+        let t = this;
+        let fn: Function = obj[fnName];
+        if (!fn) { throw new Error(`invalid fnName: ${fnName}. Not found on object.`)}
+        let lc = obj.constructor.name + "." + fnName;
+        obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
     }
 
     // ---------------------------------------

@@ -82,9 +82,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                         h.log(`resultState before: ${JSON.stringify(resultState)}`, "debug", 1, lc);
                         resultState = 
                             resultState || 
-                            h.gib(skillTransform, [stimulus, history]);
-                            h.log("yoooooo", "debug", 0, lc);
-                            // skillTransform.call(t, stimulus, history);
+                            h.gib(t, skillTransform, [stimulus, history]);
                         h.log(`resultState after: ${JSON.stringify(resultState)}`, "debug", 1, lc);
                         return resultState;
                     }, <SkillState>null); // initial resultState
@@ -100,7 +98,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 throw `Unknown intentName: ${name}`;
             }
         }
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 
     /**
@@ -178,7 +176,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 response.ask(interaction.output, interaction.reprompt);
             }
         }
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 }
 

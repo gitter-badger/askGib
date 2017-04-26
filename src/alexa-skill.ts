@@ -42,7 +42,7 @@ export class AlexaSkill {
             }
             h.logPriority = 1; // verbose logging by default
         };
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 
     _appId: string;
@@ -65,7 +65,7 @@ export class AlexaSkill {
             // I could call t.handleLaunch directly...should I? Hrmm...
             this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
         }
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 
     handleIntentRequest(
@@ -79,7 +79,7 @@ export class AlexaSkill {
             // I could call t.handleIntent directly...should I? Hrmm...
             this.eventHandlers.onIntent.call(this, event.request, event.session, response);
         };
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 
     handleSessionEndedRequest(
@@ -97,7 +97,7 @@ export class AlexaSkill {
             t.eventHandlers.onSessionEnded(event.request, event.session);
             context.succeed();
         };
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
 
     /**
@@ -147,7 +147,7 @@ export class AlexaSkill {
                 throw `Unsupported intent: ${intentName}`;
             }
         }
-        h.gib(f, /*args*/ null, lc);
+        h.gib(t, f, /*args*/ null, lc);
     }
     
     /**
@@ -216,7 +216,7 @@ export class AlexaSkill {
                 h.log(`requestHandler is falsy.`, "error", 0, lc);
             }
         }
-        h.gib(f, 
+        h.gib(t, f, 
               /*args*/ null, 
               lc, 
               /*catchFn*/ (e) => context.fail(e))
