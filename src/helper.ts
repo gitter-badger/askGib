@@ -274,7 +274,7 @@ export class Helper implements IHelper {
      * @param ssml ssml with <speak> tag around the whole thing.
      */
     unwrapSsmlSpeak(ssml: string): string {
-        return ssml.replace(/\<speak\>/g, "");
+        return ssml.replace(/\<speak\>/g, "").replace(/\<\/speak\>/g, "");
     }
 
     /**

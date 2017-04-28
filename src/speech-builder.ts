@@ -98,6 +98,7 @@ export class SpeechBuilder {
         h.log(`about to do bits...`, "debug", 0, lc);
         h.log(`bits: ${JSON.stringify(t._bits)}`, "debug", 0, lc);
         t._bits.forEach(bit => {
+            h.log(`ssml: ${ssml}`, "debug", 0, lc);
             if (text || ssml) {
                 text = text + " ";
                 ssml = ssml + " ";
@@ -106,51 +107,46 @@ export class SpeechBuilder {
             h.log(`bit: ${JSON.stringify(bit)}`, "debug", 0, lc);
             switch (bit.type) {
                 case "text":
+                    h.log(`text in case`, "debug", 0, lc);
                     text += bit.value;
                     ssml += bit.value;
                     break;
                 case "ssml":
+                    h.log(`ssml in case`, "debug", 0, lc);
                     text += h.stripSsml(<string>bit.value);
                     ssml += bit.value;
                     break;
                 case "break":
+                    h.log(`break in case`, "debug", 0, lc);
                     // ridic edge case, if pause before any text/ssml.
                     if (ssml === " ") { ssml = ""; } 
                     // text doesn't change
-                    ssml += ssml + `<break time='${bit.value}s'/>`
+                    ssml += `<break time='${bit.value}s'/>`;
                     break;
                 case "existingOutputSpeech":
-                        let existing = <ask.OutputSpeech>bit.value;
-                        if (existing.text && existing.ssml) {
-                            text += existing.text;
-                            ssml += h.unwrapSsmlSpeak(existing.ssml);
-                        } else if (existing.text) {
-                            text += existing.text;
-                            ssml += text;
-                        } else { // existing ssml
-                            let unwrapped = 
-                                h.unwrapSsmlSpeak(existing.ssml);
-                            text += h.stripSsml(unwrapped);
-                            ssml += unwrapped;
-                        }
-                default:
-                    if (bit.type === "existingOutputSpeech") {
-                        let existing = <ask.OutputSpeech>bit.value;
-                        if (existing.text && existing.ssml) {
-                            text += existing.text;
-                            ssml += h.unwrapSsmlSpeak(existing.ssml);
-                        } else if (existing.text) {
-                            text += existing.text;
-                            ssml += text;
-                        } else { // existing ssml
-                            let unwrapped = 
-                                h.unwrapSsmlSpeak(existing.ssml);
-                            text += h.stripSsml(unwrapped);
-                            ssml += unwrapped;
-                        }
-                    } else {
-                        throw new Error(`Unknown bit.type: ${bit.type}`)
+                    h.log(`existing in case`, "debug", 0, lc);
+                    let existing = <ask.OutputSpeech>bit.value;
+                    if (existing.text && existing.ssml) {
+                        h.log(`existing text and ssml`, "debug", 0, lc);
+                        text += existing.text;
+                        ssml += h.unwrapSsmlSpeak(existing.ssml);
+                    } else if (existing.text) {
+                        h.log(`existing text only`, "debug", 0, lc);
+                        text += existing.text;
+                        ssml += text;
+                    } else { // existing ssml
+                        h.log(`existing ssml only`, "debug", 0, lc);
+                        let unwrapped = 
+                            h.unwrapSsmlSpeak(existing.ssml);
+                        text += h.stripSsml(unwrapped);
+                        ssml += unwrapped;
                     }
+                    break;
+                case "phoneme": 
+                    throw new Error("phoneme case not implemented");
+                    // break
+                default:
+                    throw new Error(`Unknown bit.type: ${bit.type}`)
             }
         });
 
