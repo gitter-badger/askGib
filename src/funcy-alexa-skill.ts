@@ -225,11 +225,6 @@ export interface SkillState {
      * interaction with the user.
      */
     interaction: Interaction,
-    /**
-     * Meant to be a dictionary storage for other state, like session 
-     * id e.g.
-     */
-    context: any,
 }
 
 /**
@@ -255,10 +250,27 @@ export interface Interaction {
      * Are we asking or telling the user something?
      */
     type: InteractionType,
+    /**
+     * The output that will be said to the user
+     */
     output: ask.OutputSpeech,
+    /**
+     * The reprompt that will be given to the user.
+     */
     reprompt: ask.OutputSpeech,
+    /**
+     * Card title that will appear in the Alexa app.
+     */
     cardTitle?: string,
-    cardContent?: string
+    /**
+     * Content of the card that will appear in the Alexa app.
+     */
+    cardContent?: string,
+    /**
+     * Meant to be a dictionary storage for other state, like session 
+     * id e.g.
+     */
+    context?: any
 }
 
 /**

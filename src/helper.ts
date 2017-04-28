@@ -251,6 +251,11 @@ export class Helper implements IHelper {
         }
     }
 
+    /**
+     * Wraps strings in <p> tags and wraps the entire thing with <speak>
+     * 
+     * @param paras individual paragraphs to be wrapped in <p></p> tags.
+     */
     wrapSsmlSpeak(paras: string[]): string {
         let result = 
             "<speak>" + 
@@ -259,6 +264,72 @@ export class Helper implements IHelper {
             }, "") +
             "</speak>";
         return result;
+    }
+
+    /**
+     * This simply replaces <speak> with an empty string.
+     * Use this when you want to add some text in and then re-wrap
+     * the ssml.
+     * 
+     * @param ssml ssml with <speak> tag around the whole thing.
+     */
+    unwrapSsmlSpeak(ssml: string): string {
+        return ssml.replace(/\<speak\>/g, "");
+    }
+
+    /**
+     * Strips all tags within ssml to produce plain text.
+     * @param ssml ssml to strip
+     */
+    stripSsml(ssml: string): string {
+        let stripped = 
+            ssml
+                // Combines </p> <p> to not double para breaks
+                .replace(/\<\/p\>[ ]*\<p\>/g, "<p>")
+                // remove spaces after <p>,</p> tags
+                .replace(/\<p\>(?=[ ])/g, "<p>")
+                .replace(/\<\/p\>(?=[ ])/g, "</p>")
+                // convert <p> and </p> to two new lines
+                .replace(/\<[\/]*p\>/g, "\n\n")
+                // Strip all remaining tags
+                .replace(/(<([^>]*)>)/ig, "")
+                // Replace multiple spaces with a single space
+                .replace(/  +/g, ' ');
+        return stripped;
+
+        // // This is the test code I did (on jsfiddle)
+        // // for testing stripSsml function.
+        // // I really need to get some unit testing going...
+        // function stripSsml(ssml) {
+        //         let stripped = 
+        //             ssml
+        //             		// Combines </p> <p> to not double para breaks
+        //                 .replace(/\<\/p\>[ ]*\<p\>/g, "<p>")
+        //                 // remove spaces after <p>,</p> tags
+        //                 .replace(/\<p\>[ ]/g, "<p>")
+        //                 .replace(/\<\/p\>[ ]/g, "</p>")
+        //                 // convert <p> and </p> to two new lines
+        //                 .replace(/\<[\/]*p\>/g, "\n\n")
+        //                 // Strip all remaining tags
+        //                 .replace(/(<([^>]*)>)/ig, "")
+        //                 // Replace multiple spaces with a single space
+        //                 .replace(/  +/g, ' ');
+        //         return stripped;
+        //     }
+
+        // let ssml = `<speak>This is some text. <p>This is in a paragraph.</p> All of this has ssml stuff <break="1s" /> yo. <p>This <phoneme alphabet="ipa" ph="pɪˈkɑːn">pecan</phoneme> tastes good!</p> <p> This is another paragraph.</p></speak>`;
+
+        // let ssmlStripped = stripSsml(ssml);
+
+        // //let ssmlStripped = 
+        // //  ssml.replace(/\<\/p\>\W/g, "</p>")
+        // //    .replace(/\<[\/]*p\>/g, "\n\n")
+        // //    .replace(/(<([^>]*)>)/ig, "")
+        // //    .replace(/  +/g, ' ');
+
+        // console.log(ssml);
+        // console.log(ssmlStripped);
+
     }
 
     /**
