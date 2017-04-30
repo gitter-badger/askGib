@@ -256,11 +256,11 @@ export class Helper implements IHelper {
      * 
      * @param paras individual paragraphs to be wrapped in <p></p> tags.
      */
-    wrapSsmlSpeak(paras: string[]): string {
+    wrapSsmlSpeak(paras: string[], addParaTags: boolean = true): string {
         let result = 
             "<speak>" + 
             paras.reduce((agg, p) => {
-                return p ? agg + "<p>" + p + "</p>" : agg;
+                return addParaTags ? agg + "<p>" + p + "</p>" : agg + p;
             }, "") +
             "</speak>";
         return result;
@@ -482,6 +482,10 @@ export class Helper implements IHelper {
         obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
     }
 
+    clone<T>(obj: T): T {
+        return <T>JSON.parse(JSON.stringify(obj));
+    }
+    
     // ---------------------------------------
     // User Identification (I'm not sure if I use these yet honestly.)
     // ---------------------------------------

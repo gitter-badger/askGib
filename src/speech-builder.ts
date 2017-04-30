@@ -52,11 +52,11 @@ export class SpeechBuilder {
         return t;
     } 
 
-    ssml(ssml: string): SpeechBuilder {
+    ssml(ssml: string, newParagraph: boolean = false): SpeechBuilder {
         let t = this;
         let bit = {
             type: SpeechBitType.ssml,
-            value: ssml
+            value: newParagraph ? `<p>${ssml}</p>` : ssml
         }
         t._bits.push(bit);
         return t;
@@ -155,7 +155,7 @@ export class SpeechBuilder {
         let output: ask.OutputSpeech = {
             type: ask.OutputSpeechType.SSML,
             text: text,
-            ssml: h.wrapSsmlSpeak([ssml])
+            ssml: h.wrapSsmlSpeak([ssml], /*addParaTags*/ false)
         }
 
         // h.log(`output: ${JSON.stringify(output)}`, "debug", 0, lc);

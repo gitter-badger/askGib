@@ -39,9 +39,14 @@ export class FuncyAlexaSkill extends AlexaSkill {
         session: ask.Session, 
         response: ResponseHelper
     ): void {
-        let t = this, lc = `AlexaSkill.handleIntentOrLaunchRequest`;
+        let t = this, 
+            lc = `FuncyAlexaSkill.handleIntentOrLaunchRequest`;
         let f = () => {
             h.log(`request: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
+
+            t.request = request;
+            t.session = session;
+            t.response = response;
 
             let intent: ask.Intent, 
                 name: string,
@@ -67,9 +72,25 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 transforms = t.transformsByName[name];
             } 
 
+            t.handleStimulus(stimulus, session, response);
+        }
+        h.gib(t, f, /*args*/ null, lc);
+    }
+
+    handleStimulus(
+        stimulus: Stimulus,
+        session: ask.Session,
+        response: ResponseHelper,
+        respond: boolean = true
+    ): SkillState {
+        let t = this, lc = `FuncyAlexaSkill.handleStimulus`;
+
+        let f: () => SkillState = () => {
+            let transforms = t.transformsByName[stimulus.name];
             session.attributes.history = 
                 session.attributes.history || [];
             let history: SkillState[] = session.attributes.history;
+            let name = stimulus.name;
 
             if (transforms) {
                 h.log(`name: ${name}`, "info", /*priority*/ 0, lc);
@@ -90,7 +111,10 @@ export class FuncyAlexaSkill extends AlexaSkill {
                     h.log(`nextSkillState: ${JSON.stringify(nextSkillState)}`, "debug", 1, lc);
                     history.push(nextSkillState);
                     session.attributes.history = history;
-                    t.respond(nextSkillState.interaction, response);
+                    if (respond) {
+                        t.respond(nextSkillState.interaction, response);
+                    }
+                    return nextSkillState;
                 } else {
                     throw `nextSkillState wasn't produced. No applicable SkillTransform?\nstimulus: ${JSON.stringify(stimulus)}\nhistory: ${JSON.stringify(history)}`;
                 }
@@ -98,7 +122,8 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 throw `Unknown intentName: ${name}`;
             }
         }
-        h.gib(t, f, /*args*/ null, lc);
+
+        return h.gib(t, f, /*args*/ null, lc);
     }
 
     /**
@@ -134,6 +159,59 @@ export class FuncyAlexaSkill extends AlexaSkill {
     transformsByName: TransformsByName = {};
 
     getLaunchRequestName() { return "WelcomeIntent"; }
+
+    /**
+     * Gets the previous skill state, if it exists.
+     * @returns if exists, returns the skill state, else null.
+     * @param history history of skill states
+     */
+    getPrevSkillState(
+        history: SkillState[],
+        filterFn?: (state: SkillState) => boolean
+    ): SkillState {
+        if (history && !filterFn) {
+            return history[history.length-1];
+        } else if (history && filterFn) {
+            let filtered = history.filter(filterFn);
+            return filtered.length > 0 ? 
+                filtered[filtered.length-1] : 
+                null;
+        } else {
+            return null;
+        }
+    }
+
+    transformRepeat: SkillTransform = (
+        stimulus: Stimulus, 
+        history: SkillState[]
+    ): SkillState => {
+        let t = this, lc = `transformRepeat`;
+        let f = () => {
+            // Get the previous stimulus, but skip any of them 
+            // caused by repeat intents. 
+            let prevSkillState = 
+                t.getPrevSkillState(
+                    history, 
+                    state =>
+                        !state.interaction.stimulus.repeatIntentOrLaunchRequest
+            );
+
+            if (prevSkillState) {
+                let clonePrevStimulus = 
+                    h.clone(prevSkillState.interaction.stimulus);
+                clonePrevStimulus.repeatIntentOrLaunchRequest = stimulus.intent || stimulus.launchRequest;
+                return t.handleStimulus(clonePrevStimulus, t.session, t.response, /*respond?*/ false);
+            } else {
+                // doesn't apply to this transform
+                return null;
+            }
+        }
+        let fResult = h.gib(t, f, /*args*/ null, lc);
+
+        h.log(`fResult: ${JSON.stringify(fResult)}`, "debug", 0, lc);
+
+        return fResult;
+    }
 
     /**
      * By default, this examines the interaction and does the 
@@ -282,7 +360,17 @@ export interface Stimulus {
     name: string,
     origin: StimulusOrigin,
     intent?: ask.Intent,
-    launchRequest?: ask.LaunchRequest
+    /**
+     * This is set when the stimulus is not an intent, but rather 
+     * a launch request.
+     */
+    launchRequest?: ask.LaunchRequest,
+    /**
+     * If the stimulus is from an AMAZON.RepeatIntent, then this
+     * will be set to the most previous intent or launch request.
+     * Else, will be falsy.
+     */
+    repeatIntentOrLaunchRequest?: ask.Intent | ask.LaunchRequest
 }
 
 export type StimulusOrigin = "user"

@@ -46,6 +46,36 @@ export class AlexaSkill {
     }
 
     _appId: string;
+    /**
+     * The current request.
+     * 
+     * Note: It is assumed that this runs in Amazon Lambda, so this 
+     *   class is created every time. Otherwise, this would become
+     *   mutable state. I actually pass around these values most
+     *   of the time, but found I didn't want to add them to the 
+     *   FuncyAlexaSkill transform handling.
+     */
+    request: ask.AlexaRequest;
+    /**
+     * The current session.
+     * 
+     * Note: It is assumed that this runs in Amazon Lambda, so this 
+     *   class is created every time. Otherwise, this would become
+     *   mutable state. I actually pass around these values most
+     *   of the time, but found I didn't want to add them to the 
+     *   FuncyAlexaSkill transform handling.
+     */
+    session: ask.Session;
+    /**
+     * The current response.
+     * 
+     * Note: It is assumed that this runs in Amazon Lambda, so this 
+     *   class is created every time. Otherwise, this would become
+     *   mutable state. I actually pass around these values most
+     *   of the time, but found I didn't want to add them to the 
+     *   FuncyAlexaSkill transform handling.
+     */
+    response: ResponseHelper;
 
     requestHandlers: RequestHandlers = {
         LaunchRequest: this.handleLaunchRequest,
@@ -62,8 +92,12 @@ export class AlexaSkill {
         let f = () => {
             h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
 
+            t.request = event.request;
+            t.session = event.session;
+            t.response = response;
+
             // I could call t.handleLaunch directly...should I? Hrmm...
-            this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
+            this.eventHandlers.onLaunch.call(t, t.request, t.session, response);
         }
         h.gib(t, f, /*args*/ null, lc);
     }
@@ -76,8 +110,11 @@ export class AlexaSkill {
         let t = this, lc = `AlexaSkill.handleIntentRequest`;
         let f = () => {
             h.log(`event: ${JSON.stringify(event)}, context: ${JSON.stringify(context)}`, "info", /*priority*/ 1, lc);
+            t.request = event.request;
+            t.session = event.session;
+            t.response = response;
             // I could call t.handleIntent directly...should I? Hrmm...
-            this.eventHandlers.onIntent.call(this, event.request, event.session, response);
+            this.eventHandlers.onIntent.call(t, t.request, t.session, response);
         };
         h.gib(t, f, /*args*/ null, lc);
     }
@@ -94,7 +131,9 @@ export class AlexaSkill {
                 /*priority*/ 1,
                 lc
             );
-            t.eventHandlers.onSessionEnded(event.request, event.session);
+            t.request = event.request;
+            t.session = event.session;
+            t.eventHandlers.onSessionEnded(t.request, t.session);
             context.succeed();
         };
         h.gib(t, f, /*args*/ null, lc);
@@ -112,6 +151,8 @@ export class AlexaSkill {
      
         h.log(`sessionId: ${session.sessionId}`, "info", /*priority*/ 1, lc);
         h.log(`requestId: ${request.requestId}`, "info", /*priority*/ 1, lc);
+        t.request = request;
+        t.session = session;
     }
 
     /**
@@ -130,15 +171,19 @@ export class AlexaSkill {
      * Called when the user specifies an intent.
      */
     handleIntent(
-        intentRequest: ask.IntentRequest, 
+        request: ask.IntentRequest, 
         session: ask.Session, 
         response: ResponseHelper
     ): void {
         let t = this, lc = `AlexaSkill.handleIntent`;
         let f = () => {
-            h.log(`intentRequest: ${JSON.stringify(intentRequest)}`, "info", /*priority*/ 1, lc);
-            let intent = intentRequest.intent,
-                intentName = intentRequest.intent.name,
+            h.log(`request: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
+            t.request = request;
+            t.session = session;
+            t.response = response;
+
+            let intent = request.intent,
+                intentName = request.intent.name,
                 intentHandler = t.intentHandlers[intentName];
             if (intentHandler) {
                 h.log(`intentName: ${intentName}`, "info", /*priority*/ 0, lc);
@@ -160,6 +205,8 @@ export class AlexaSkill {
     ): void {
         let t = this, lc = `AlexaSkill.handleSessionEnded`;
         h.log(`sessionEndedRequest: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
+        t.request = request;
+        t.session = session;
     }
 
     /**
