@@ -3,3 +3,4 @@ export * from "./alexa-skills-kit";
 export * from "./funcy-alexa-skill";
 export * from "./helper";
 export * from "./speech-builder";
+export * from "./response-helper";

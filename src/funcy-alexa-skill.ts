@@ -1,4 +1,5 @@
-import { AlexaSkill, ResponseHelper } from './alexa-skill';
+import { AlexaSkill } from './alexa-skill';
+import { ResponseHelper } from './response-helper';
 import * as ask from './alexa-skills-kit';
 
 /**
@@ -90,6 +91,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
             session.attributes.history = 
                 session.attributes.history || [];
             let history: SkillState[] = session.attributes.history;
+            h.log(`history: ${JSON.stringify(history)}`, "debug", 0, lc);
             let name = stimulus.name;
 
             if (transforms) {
@@ -110,6 +112,8 @@ export class FuncyAlexaSkill extends AlexaSkill {
                 if (nextSkillState) {
                     h.log(`nextSkillState: ${JSON.stringify(nextSkillState)}`, "debug", 1, lc);
                     history.push(nextSkillState);
+                    let historyLength = JSON.stringify(history).length;
+                    h.log(`historyLength (unpacked): ${historyLength}`, "debug", 0, lc);
                     session.attributes.history = history;
                     if (respond) {
                         t.respond(nextSkillState.interaction, response);
@@ -187,6 +191,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
     ): SkillState => {
         let t = this, lc = `transformRepeat`;
         let f = () => {
+            h.log(`history: ${JSON.stringify(history)}`, "debug", 0, lc);
             // Get the previous stimulus, but skip any of them 
             // caused by repeat intents. 
             let prevSkillState = 
@@ -228,6 +233,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
         let f = () => {
             let cardTitle = interaction.cardTitle;
             if (interaction.type === "tell" && cardTitle) {
+                h.log(`tellWithCar`, "debug", 0, lc);
                 response.tellWithCard({ 
                     outputSpeech: interaction.output, 
                     repromptSpeech: interaction.reprompt, 
@@ -236,6 +242,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                     shouldEndSession: true
                 });
             } else if (interaction.type === "ask" && cardTitle) {
+                h.log(`askWithCard`, "debug", 0, lc);
                 response.askWithCard({ 
                     outputSpeech: interaction.output, 
                     repromptSpeech: interaction.reprompt, 
@@ -243,6 +250,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                     cardContent: interaction.cardContent
                 });
             } else if (interaction.type === "tell") {
+                h.log(`tell, no card`, "debug", 0, lc);
                 // tell, no card
                 response.tell({
                     outputSpeech: interaction.output,
@@ -250,6 +258,7 @@ export class FuncyAlexaSkill extends AlexaSkill {
                     shouldEndSession: true
                 });
             } else {
+                h.log(`ask, no card`, "debug", 0, lc);
                 // ask, no card
                 response.ask(interaction.output, interaction.reprompt);
             }

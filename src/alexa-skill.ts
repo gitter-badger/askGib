@@ -21,6 +21,7 @@
 
 import * as ask from './alexa-skills-kit';
 
+import { SpeechletResponseOptions, ResponseHelper } from './response-helper';
 /**
  * Imports helper that has logging, among other things.
  */
@@ -97,7 +98,7 @@ export class AlexaSkill {
             t.response = response;
 
             // I could call t.handleLaunch directly...should I? Hrmm...
-            this.eventHandlers.onLaunch.call(t, t.request, t.session, response);
+            t.eventHandlers.onLaunch.call(t, t.request, t.session, response);
         }
         h.gib(t, f, /*args*/ null, lc);
     }
@@ -114,7 +115,7 @@ export class AlexaSkill {
             t.session = event.session;
             t.response = response;
             // I could call t.handleIntent directly...should I? Hrmm...
-            this.eventHandlers.onIntent.call(t, t.request, t.session, response);
+            t.eventHandlers.onIntent.call(t, t.request, t.session, response);
         };
         h.gib(t, f, /*args*/ null, lc);
     }
@@ -241,9 +242,9 @@ export class AlexaSkill {
             h.log(`session applicationId: ${event.session.application.applicationId}`, "info", /*priority*/ 2, lc);
 
             // Validate that this request originated from authorized source.
-            if (this._appId && event.session.application.applicationId !== this._appId) {
-                let emsg = `Invalid applicationId: ${event.session.application.applicationId}`;
-                throw emsg;
+            if (t._appId && 
+                event.session.application.applicationId !== t._appId) {
+                throw `Invalid applicationId: ${event.session.application.applicationId}`;
             }
 
             if (!event.session.attributes) {
@@ -255,10 +256,10 @@ export class AlexaSkill {
             }
 
             // Route the request to the proper handler which may have been overriden.
-            var requestHandler = this.requestHandlers[event.request.type];
+            let requestHandler = t.requestHandlers[event.request.type];
             h.log(`event.request.type: ${event.request.type}`, "debug", 0, lc);
             if (requestHandler) {
-                requestHandler.call(this, event, context, new ResponseHelper(context, event.session));
+                requestHandler.call(t, event, context, new ResponseHelper(context, event.session));
             } else {
                 h.log(`requestHandler is falsy.`, "error", 0, lc);
             }
@@ -288,131 +289,4 @@ export interface RequestHandlers {
     [key: string]: (event: ask.RequestBody, 
                     context: ask.Context, 
                     response?: ResponseHelper) => void
-}
-
-export class ResponseHelper {
-    constructor(context: ask.Context, session: ask.Session) {
-        this._context = context;
-        this._session = session;
-    };
-
-    private _context: ask.Context;
-    private _session: ask.Session;
-
-    static buildResponseBody(
-        options: ISpeechletResponseOptions
-    ): ask.ResponseBody {
-        var alexaResponse: ask.Response = {
-            // outputSpeech: Response.createSpeechObject(options.output),
-            outputSpeech: options.output,
-            shouldEndSession: options.shouldEndSession
-        };
-        if (options.repromptSpeech) {
-            alexaResponse.reprompt = {
-                outputSpeech: options.repromptSpeech
-            };
-        }
-        if (options.cardTitle && options.cardContent) {
-            alexaResponse.card = {
-                type: ask.CardType.Simple,
-                title: options.cardTitle,
-                content: options.cardContent
-            };
-        }
-
-        var returnResult: ask.ResponseBody = {
-                version: '1.0',
-                response: alexaResponse
-        };
-
-        if (options.session && options.session.attributes) {
-            returnResult.sessionAttributes = options.session.attributes;
-        }
-
-        return returnResult;
-    };
-
-    tell({
-        outputSpeech,
-        repromptSpeech,
-        shouldEndSession = true
-    }: {
-        outputSpeech: ask.OutputSpeech,
-        repromptSpeech?: ask.OutputSpeech,
-        shouldEndSession?: boolean
-    }): void {
-        this._context.succeed(ResponseHelper.buildResponseBody({
-            session: this._session,
-            output: outputSpeech,
-            repromptSpeech: repromptSpeech,
-            shouldEndSession: shouldEndSession
-        }));
-    }
-
-
-    tellWithCard({
-        outputSpeech,
-        repromptSpeech,
-        cardTitle,
-        cardContent,
-        shouldEndSession = true
-    }: {
-        outputSpeech: ask.OutputSpeech,
-        repromptSpeech?: ask.OutputSpeech,
-        cardTitle: string,
-        cardContent: string,
-        shouldEndSession?: boolean
-    }): void {
-        this._context.succeed(ResponseHelper.buildResponseBody({
-            session: this._session,
-            output: outputSpeech,
-            repromptSpeech: repromptSpeech,
-            cardTitle: cardTitle,
-            cardContent: cardContent,
-            shouldEndSession: shouldEndSession
-        }));
-    }
-
-    ask(
-        outputSpeech: ask.OutputSpeech, 
-        repromptSpeech: ask.OutputSpeech
-    ): void {
-        this._context.succeed(ResponseHelper.buildResponseBody({
-            session: this._session,
-            output: outputSpeech,
-            repromptSpeech: repromptSpeech,
-            shouldEndSession: false
-        }));
-    }
-
-    askWithCard({
-        outputSpeech,
-        repromptSpeech,
-        cardTitle,
-        cardContent
-    }: {
-        outputSpeech: ask.OutputSpeech,
-        repromptSpeech?: ask.OutputSpeech,
-        cardTitle: string,
-        cardContent: string
-    }): void {
-        this._context.succeed(ResponseHelper.buildResponseBody({
-            session: this._session,
-            output: outputSpeech,
-            repromptSpeech: repromptSpeech,
-            cardTitle: cardTitle,
-            cardContent: cardContent,
-            shouldEndSession: false
-        }));
-    }
-}
-
-/** Helper interface. I'm not really sure if this is absolutely necessary in architecture, but it was how the demo was set up. In the future, I may remove this little classlet. */
-export interface ISpeechletResponseOptions {
-    session: ask.Session,
-    output: ask.OutputSpeech,
-    shouldEndSession: boolean,
-    repromptSpeech?: ask.OutputSpeech,
-    cardTitle?: string,
-    cardContent?: string
 }

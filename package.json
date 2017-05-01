@@ -18,14 +18,17 @@
     "amazon"
   ],
   "author": {
-    "name" : "William Raiford",
-    "email" : "ibgib@ibgib.com",
-    "url" : "https://github.com/bill-mybiz"
+    "name": "William Raiford",
+    "email": "ibgib@ibgib.com",
+    "url": "https://github.com/bill-mybiz"
   },
   "license": "MIT",
   "typings": "bin/index.d.ts",
   "bugs": {
     "url": "https://github.com/ibgib/askGib/issues"
   },
-  "homepage": "https://github.com/ibgib/askGib"
+  "homepage": "https://github.com/ibgib/askGib",
+  "dependencies": {
+    "aws-sdk": "^2.48.0"
+  }
 }
