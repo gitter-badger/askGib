@@ -1,3 +1,5 @@
 .vscode/
 tsconfig.json
 src/
+git-commit-template.md
+
