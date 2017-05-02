@@ -68,7 +68,7 @@ export class DynamoDbHelper {
     }
 
     save(sessionAttributes: any): Promise<void> {
-        let t = this, lc = `DynamoDbHelper.save(${t.userId})`;
+        let t = this, lc = `DynamoDbHelper.save()`;
 
         let f = () => { return new Promise<void>((resolve, reject) => {
             try {
@@ -112,10 +112,10 @@ export class DynamoDbHelper {
      * If exists, gets the DynamoRecord (Promise) for `t.userId`.
      * If doesn't exist, returns null;
      */
-    get(): Promise<DynamoRecord> {
-        let t = this, lc = `DynamoDbHelper.save(${t.userId})`;
+    get(): Promise<string> {
+        let t = this, lc = `DynamoDbHelper.get()`;
 
-        let f = () => { return new Promise<DynamoRecord>((resolve, reject) => {
+        let f = () => { return new Promise<string>((resolve, reject) => {
             try {
                 let params: aws.DynamoDB.DocumentClient.GetItemInput = {
                     TableName: t.dbTableName,
@@ -130,7 +130,10 @@ export class DynamoDbHelper {
                         reject(errDbGet);
                     } else {
                         h.log(`Get complete. UserId: ${t.userId}`, 'debug', 0, lc);
-                        let item = data.Item ? <DynamoRecord>data.Item : null;
+                        h.log(`data.Item: ${JSON.stringify(data.Item)}`, 'debug', 0, lc);
+                        let item = 
+                            data.Item ? JSON.stringify(<DynamoRecord>data.Item) : null;
+                        h.log(`resolving get yo`, 'debug', 0, lc);
                         resolve(item);
                     }
                 });

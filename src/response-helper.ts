@@ -20,67 +20,110 @@
 
 import * as ask from './alexa-skills-kit';
 
+import { DynamoDbHelper } from './dynamo-db-helper';
+
 /**
  * Imports helper that has logging, among other things.
  */
 import * as help from './helper';
 let h = new help.Helper();
 
-/** Helper interface. I'm not really sure if this is absolutely necessary in architecture, but it was how the demo was set up. In the future, I may remove this little classlet. */
-export interface SpeechletResponseOptions {
-    session: ask.Session,
-    output: ask.OutputSpeech,
-    shouldEndSession: boolean,
-    repromptSpeech?: ask.OutputSpeech,
-    cardTitle?: string,
-    cardContent?: string
-}
+// /** Helper interface. I'm not really sure if this is absolutely necessary in architecture, but it was how the demo was set up. In the future, I may remove this little classlet. */
+// export interface SpeechletResponseOptions {
+//     session: ask.Session,
+//     output: ask.OutputSpeech,
+//     shouldEndSession: boolean,
+//     repromptSpeech?: ask.OutputSpeech,
+//     cardTitle?: string,
+//     cardContent?: string,
+//     dynamoDbTableName?: string,
+//     userId?: string
+// }
 
+/**
+ * Helper class to interact with the response object.
+ */
 export class ResponseHelper {
-    constructor(context: ask.Context, session: ask.Session) {
-        let t = this;
-        t._context = context;
-        t._session = session;
+    /**
+     * Helper class to interact with the response object.
+     * 
+     * @param context Alexa Context
+     * @param session Alexa Session
+     * @param dynamoDbTableName Optional dynamoDb table name. Should have a key of UserId: string. If set, will store the session attributes in the table instead of on the session object itself.
+     */
+    constructor(
+        readonly context: ask.Context, 
+        readonly session: ask.Session, 
+        readonly dynamoDbTableName?: string,
+    ) {
+        // let t = this;
+        // t.context = context;
+        // t.session = session;
     };
 
-    private _context: ask.Context;
-    private _session: ask.Session;
+    // private context: ask.Context;
+    // private session: ask.Session;
 
-    static buildResponseBody(
-        options: SpeechletResponseOptions
-    ): ask.ResponseBody {
-        let lc = `ResponseHelper.buildResponseBody`;
+    buildResponseBody({
+        session,
+        output,
+        shouldEndSession,
+        repromptSpeech,
+        cardTitle,
+        cardContent
+    }: {
+        session: ask.Session,
+        output: ask.OutputSpeech,
+        shouldEndSession: boolean,
+        repromptSpeech?: ask.OutputSpeech,
+        cardTitle?: string,
+        cardContent?: string
+    }): ask.ResponseBody {
+        let t = this, lc = `ResponseHelper.buildResponseBody`;
+
         let alexaResponse: ask.Response = {
-            // outputSpeech: Response.createSpeechObject(options.output),
-            outputSpeech: options.output,
-            shouldEndSession: options.shouldEndSession
+            // outputSpeech: Response.createSpeechObject(output),
+            outputSpeech: output,
+            shouldEndSession: shouldEndSession
         };
-        if (options.repromptSpeech) {
+        if (repromptSpeech) {
             alexaResponse.reprompt = {
-                outputSpeech: options.repromptSpeech
+                outputSpeech: repromptSpeech
             };
         }
-        if (options.cardTitle && options.cardContent) {
+        if (cardTitle && cardContent) {
             alexaResponse.card = {
                 type: ask.CardType.Simple,
-                title: options.cardTitle,
-                content: options.cardContent
+                title: cardTitle,
+                content: cardContent
             };
         }
 
-        let returnResult: ask.ResponseBody = {
+        let responseBody: ask.ResponseBody = {
                 version: '1.0',
                 response: alexaResponse
         };
 
-        if (options.session && options.session.attributes) {
-            returnResult.sessionAttributes = options.session.attributes;
+        if (session && session.attributes) {
+            // duplicate so we know which session belongs to the 
+            // attributes, since we may persist this to dynamodb.
+            session.attributes.sessionId = session.sessionId;
+            if (t.dynamoDbTableName) {
+                let dynamoHelper = new DynamoDbHelper(
+                    t.dynamoDbTableName, 
+                    session.user.userId
+                );
+               dynamoHelper.save(session.attributes); 
+            } else {
+                responseBody.sessionAttributes = session.attributes;
+            }
         }
 
         h.log(`helllllo?`, "debug", 0, lc);
-        let responseAsString = JSON.stringify(returnResult);
+        let responseAsString = JSON.stringify(responseBody);
         h.log(`response length: ${responseAsString.length}`, "debug", 0, lc);
-        return returnResult;
+
+        return responseBody;
     };
 
     tell({
@@ -93,12 +136,14 @@ export class ResponseHelper {
         shouldEndSession?: boolean
     }): void {
         let t = this;
-        t._context.succeed(ResponseHelper.buildResponseBody({
-            session: t._session,
+        let response = t.buildResponseBody({
+            session: t.session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
             shouldEndSession: shouldEndSession
-        }));
+        })
+
+        t.context.succeed();
     }
 
 
@@ -116,8 +161,8 @@ export class ResponseHelper {
         shouldEndSession?: boolean
     }): void {
         let t = this;
-        t._context.succeed(ResponseHelper.buildResponseBody({
-            session: t._session,
+        t.context.succeed(t.buildResponseBody({
+            session: t.session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
             cardTitle: cardTitle,
@@ -131,8 +176,8 @@ export class ResponseHelper {
         repromptSpeech: ask.OutputSpeech
     ): void {
         let t = this;
-        t._context.succeed(ResponseHelper.buildResponseBody({
-            session: t._session,
+        t.context.succeed(t.buildResponseBody({
+            session: t.session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
             shouldEndSession: false
@@ -151,8 +196,8 @@ export class ResponseHelper {
         cardContent: string
     }): void {
         let t = this;
-        t._context.succeed(ResponseHelper.buildResponseBody({
-            session: t._session,
+        t.context.succeed(t.buildResponseBody({
+            session: t.session,
             output: outputSpeech,
             repromptSpeech: repromptSpeech,
             cardTitle: cardTitle,

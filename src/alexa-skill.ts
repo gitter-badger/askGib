@@ -21,11 +21,12 @@
 
 import * as ask from './alexa-skills-kit';
 
-import { SpeechletResponseOptions, ResponseHelper } from './response-helper';
+import { ResponseHelper } from './response-helper';
 /**
  * Imports helper that has logging, among other things.
  */
 import * as help from './helper';
+import { DynamoDbHelper } from "./dynamo-db-helper";
 let h = new help.Helper();
 
 'use strict';
@@ -33,20 +34,25 @@ let h = new help.Helper();
 
 /**  */
 export class AlexaSkill {
-    constructor(appId: string) {
+    /**
+     * Creates a new instance of an AlexaSkill.
+     * 
+     * @param appId application id (should not be in version control)
+     * @param dynamoDbTableName Optional dynamoDb table name. Should have a key of UserId: string. If set, will store the session attributes in the table instead of on the session object itself.
+     */
+    constructor(
+        readonly appId: string,
+        readonly dynamoDbTableName?: string
+    ) {
         let t = this, lc = `AlexaSkill.ctor`;
         let f = () => {
-            if (appId) {
-                t._appId = appId;
-            } else { 
-                throw new Error(`appId required`); 
-            }
+            if (!appId) { throw new Error(`appId required`); }
             h.logPriority = 1; // verbose logging by default
         };
         h.gib(t, f, /*args*/ null, lc);
     }
 
-    _appId: string;
+    // appId: string;
     /**
      * The current request.
      * 
@@ -208,6 +214,15 @@ export class AlexaSkill {
         h.log(`sessionEndedRequest: ${JSON.stringify(request)}`, "info", /*priority*/ 1, lc);
         t.request = request;
         t.session = session;
+
+        if (t.dynamoDbTableName) {
+            // check for session attributes in dynamodb
+            let dynamoHelper = new DynamoDbHelper(
+                t.dynamoDbTableName,
+                session.user.userId
+            );
+            dynamoHelper.save({ sessionId: session.sessionId });
+        }
     }
 
     /**
@@ -233,23 +248,21 @@ export class AlexaSkill {
      */
     intentHandlers: IntentHandlers = {};
 
-    execute(
+    async execute(
         event: ask.RequestBody, 
         context: ask.Context
-    ): void {
+    ): Promise<void> {
         let t = this, lc = `AlexaSkill.execute`;
-        let f = () => {
+        let f = async () => {
             h.log(`session applicationId: ${event.session.application.applicationId}`, "info", /*priority*/ 2, lc);
 
             // Validate that this request originated from authorized source.
-            if (t._appId && 
-                event.session.application.applicationId !== t._appId) {
+            if (t.appId && 
+                event.session.application.applicationId !== t.appId) {
                 throw `Invalid applicationId: ${event.session.application.applicationId}`;
             }
 
-            if (!event.session.attributes) {
-                event.session.attributes = {};
-            }
+            await t.initSessionAttributes(event.session);
 
             if (event.session.new) {
                 t.eventHandlers.onSessionStarted(event.request, event.session);
@@ -259,15 +272,72 @@ export class AlexaSkill {
             let requestHandler = t.requestHandlers[event.request.type];
             h.log(`event.request.type: ${event.request.type}`, "debug", 0, lc);
             if (requestHandler) {
-                requestHandler.call(t, event, context, new ResponseHelper(context, event.session));
+                requestHandler.call(t, event, context, new ResponseHelper(context, event.session, t.dynamoDbTableName));
             } else {
                 h.log(`requestHandler is falsy.`, "error", 0, lc);
             }
         }
-        h.gib(t, f, 
-              /*args*/ null, 
-              lc, 
-              /*catchFn*/ (e) => context.fail(e))
+        await h.gib(t, f, 
+                    /*args*/ null, 
+                    lc, 
+                    /*catchFn*/ (e) => context.fail(e))
+    }
+
+    initSessionAttributes(session: ask.Session): Promise<void> {
+        let t = this, lc = `AlexaSkill.initSessionAttributes`;
+
+        let f = () => { return new Promise(async (resolve, reject) => {
+            try {
+                if (session.attributes || !t.dynamoDbTableName) {
+                    session.attributes = session.attributes || {};
+                } else {
+                    session.attributes = 
+                        await t.getSessionAttributes(session);
+                } 
+                resolve();
+            } catch (errP) {
+                h.logError(`errP`, errP, lc);
+                reject(errP);
+            }
+        }) };
+
+        return h.gib(t, f, /*args*/ null, lc);
+    }
+
+    async getSessionAttributes(session: ask.Session): Promise<any> {
+        let t = this, lc = `AlexaSkill.getSessionAttributes`;
+
+        let f = async () => { return new Promise<any>(async (resolve, reject) => {
+            try {
+                // check for session attributes in dynamodb
+                let helper = new DynamoDbHelper(
+                    t.dynamoDbTableName,
+                    session.user.userId
+                );
+                let record = await helper.get();
+
+                h.log(`got record or null`, "debug", 0, lc);
+                if (record) {
+                    h.log(`record: ${record}`, "debug", 0, lc);
+                    let sessionAttributes = 
+                        JSON.parse(record).SessionAttributes;
+                    if (sessionAttributes.sessionId === session.sessionId) {
+                        resolve(sessionAttributes);
+                    } else {
+                        resolve({});
+                    }
+                } else {
+                    h.log(`record: ${record}`, "debug", 0, lc);
+                    resolve({}); // debug;
+                }
+
+            } catch (errP) {
+                h.logError(`errP`, errP, lc);
+                reject(errP);
+            }
+        }) };
+
+        return await h.gib(t, f, /*args*/ null, lc);
     }
 }
 

@@ -31,6 +31,13 @@ let h = new help.Helper();
  */
 export class FuncyAlexaSkill extends AlexaSkill {
     /**
+     * Creates an instance of a FuncyAlexaSkill.
+     */
+    constructor(appId: string, dynamoDbTableName?: string) {
+        super(appId, dynamoDbTableName);
+    }
+
+    /**
      * This overrides the base class's handleIntent in order to wrap
      * intents and use the funcy skill state mechanism.
      * The `intentHandlers` property is no longer used.

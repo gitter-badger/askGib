@@ -30,5 +30,8 @@
   "homepage": "https://github.com/ibgib/askGib",
   "dependencies": {
     "aws-sdk": "^2.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.15"
   }
 }
