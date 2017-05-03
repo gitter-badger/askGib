@@ -448,6 +448,22 @@ export class Helper implements IHelper {
         return this.ib(fThis, f, args, lc, catchFn, finallyFn, rethrow, withTrace).call(this);
     }
 
+    // ibPromise<TResult>(
+    //     fThis: any,
+    //     f: (fResolve, fReject) => Promise<TResult>,
+    //     args: any[], 
+    //     lc?: string, 
+    //     catchFn?: (e: Error) => void, 
+    //     finallyFn?: () => void,
+    //     rethrow: boolean = true,
+    //     withTrace: boolean = true
+    // ): Promise<TResult> {
+    //     let result = new Promise<TResult>((resolve, reject) => {
+    //         h.logfunc
+    //     });
+    //     return result;
+    // }
+
     /**
      * Wraps the given object's functions corresponding to `funcNames` with 
      * @param obj 

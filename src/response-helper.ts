@@ -136,14 +136,13 @@ export class ResponseHelper {
         shouldEndSession?: boolean
     }): void {
         let t = this;
-        let response = t.buildResponseBody({
+        let response = 
+        t.context.succeed(t.buildResponseBody({
             session: t.session,
             output: outputSpeech,
-            repromptSpeech: repromptSpeech,
+            // repromptSpeech: repromptSpeech,
             shouldEndSession: shouldEndSession
-        })
-
-        t.context.succeed();
+        }));
     }
 
 

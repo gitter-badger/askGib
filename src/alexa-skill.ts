@@ -262,7 +262,18 @@ export class AlexaSkill {
                 throw `Invalid applicationId: ${event.session.application.applicationId}`;
             }
 
+            h.log(`request type: ${event.request.type}`, "debug", 0, lc);
             await t.initSessionAttributes(event.session);
+
+            // let testAsync = () => {
+            //     return new Promise(resolve => {
+            //         setTimeout(() => {
+            //             h.log(`testAsync returned...resolving`, "debug", 0, lc);
+            //             resolve();
+            //         }, 3000);
+            // }) };
+
+            // await testAsync();
 
             if (event.session.new) {
                 t.eventHandlers.onSessionStarted(event.request, event.session);

@@ -146,7 +146,6 @@ export class DynamoDbHelper {
         return h.gib(t, f, /*args*/ null, lc);
     }
 
-
     /**
      * Checks to see if table exists. Returns Promise<boolean>.
      * 
