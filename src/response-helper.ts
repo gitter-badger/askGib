@@ -54,15 +54,9 @@ export class ResponseHelper {
     constructor(
         readonly context: ask.Context, 
         readonly session: ask.Session, 
-        readonly dynamoDbTableName?: string,
+        readonly dynamoDbTableName?: string
     ) {
-        // let t = this;
-        // t.context = context;
-        // t.session = session;
-    };
-
-    // private context: ask.Context;
-    // private session: ask.Session;
+    }
 
     buildResponseBody({
         session,

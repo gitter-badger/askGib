@@ -294,7 +294,8 @@ export class Helper implements IHelper {
                 // Strip all remaining tags
                 .replace(/(<([^>]*)>)/ig, "")
                 // Replace multiple spaces with a single space
-                .replace(/  +/g, ' ');
+                .replace(/  +/g, ' ')
+                .replace(/\\n\\n\\n/g, "\n\n");
         return stripped;
 
         // // This is the test code I did (on jsfiddle)
@@ -330,6 +331,77 @@ export class Helper implements IHelper {
         // console.log(ssml);
         // console.log(ssmlStripped);
 
+    }
+
+    /**
+     * Creates an ssml string of the given text and wraps it in a 
+     * phoneme tag with the given pronunciation and alphabet.
+     * 
+     * I'm basically making this because I don't want to have to 
+     * memorize the details of the phoneme tag.
+     * 
+     * @param text Literal text that we're wrapping the phoneme tag around, e.g. "sewing".
+     * @param pronunciation the phoneme itself, e.g. "soʊɪŋ"
+     * @param alphabet phoneme alphabet, either "ipa" or "x-sampe" (ATOW)
+     */
+    phoneme(
+        text: string,
+        pronunciation: string, 
+        alphabet: "ipa" | "x-sampa" = "ipa"
+    ): string{
+        return `<phoneme alphabet="${alphabet}" ph="${pronunciation}">${text}</phoneme>`
+    }
+
+    emphasis(
+        text: string,
+        level: "strong" | "moderate" | "reduced" = "moderate"
+    ) {
+        return `<emphasis level="${level}">${text}</emphasis>`
+    }
+
+    prosody(
+        text: string,
+        { 
+            rate, 
+            pitch, 
+            volume
+        }: {
+            rate?: "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
+            pitch?: "x-low" | "low" | "medium" | "high" | "x-high" | number,
+            volume?: "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
+    }): string {
+        // need to add the + to positive numbers
+        let rateText = 
+            rate && !isNaN(<number>rate) ?
+            rate + "%" :
+            rate;
+        let pitchText; 
+        if (pitch && !isNaN(<number>pitch) && pitch > 0) {
+            pitchText = "+" + <number>pitch + "%";
+        } else if (pitch && !isNaN(<number>pitch)) {
+            pitchText = "-" + <number>pitch + "%";
+        } else {
+            // word value or falsy
+            pitchText = pitch || "";
+        } 
+        
+        let volumeText;
+        if (volume && !isNaN(<number>volume) && volume > 0) {
+            volumeText = "+" + <number>volume + "%";
+        } else if (volume && !isNaN(<number>volume)) {
+            volumeText = "-" + <number>volume + "%";
+        } else {
+            // word value or falsy
+            volumeText = volume || "";
+        }        
+        
+        return "<prosody " +
+          (rate ? `rate="${rateText}"` : "") +
+          (pitch ? `pitch="${pitchText}"` : "") +
+          (volume ? `volume="${volumeText}"` : "") +
+          ">" +
+          text + 
+          "</prosody>"
     }
 
     /**
