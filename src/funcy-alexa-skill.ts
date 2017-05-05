@@ -209,10 +209,26 @@ export class FuncyAlexaSkill extends AlexaSkill {
             );
 
             if (prevSkillState) {
-                let clonePrevStimulus = 
-                    h.clone(prevSkillState.interaction.stimulus);
-                clonePrevStimulus.repeatIntentOrLaunchRequest = stimulus.intent || stimulus.launchRequest;
-                return t.handleStimulus(clonePrevStimulus, t.session, t.response, /*respond?*/ false);
+                // let clonePrevStimulus = 
+                //     h.clone(prevSkillState.interaction.stimulus);
+                // clonePrevStimulus.repeatIntentOrLaunchRequest = 
+                //     stimulus.intent || stimulus.launchRequest;
+                stimulus.repeatIntentOrLaunchRequest = 
+                    stimulus.intent || stimulus.launchRequest;
+                let interaction = h.clone(prevSkillState.interaction);
+                interaction.cardTitle = null; 
+                interaction.cardContent = null;
+                let nextSkillState: SkillState = {
+                    id: h.generateUUID(),
+                    interaction: interaction,
+                    location: prevSkillState.location
+                };
+
+                return nextSkillState;
+
+                // // The transform needs to take into account if it was
+                // // caused by a repeat or a fresh stimulus.
+                // return t.handleStimulus(clonePrevStimulus, t.session, t.response, /*respond?*/ false);
             } else {
                 // doesn't apply to this transform
                 return null;

@@ -295,7 +295,8 @@ export class Helper implements IHelper {
                 .replace(/(<([^>]*)>)/ig, "")
                 // Replace multiple spaces with a single space
                 .replace(/  +/g, ' ')
-                .replace(/\\n\\n\\n/g, "\n\n");
+                .replace(/\\n\\n\\n/g, "\n\n")
+                .replace(/^\\n+/, "");
         return stripped;
 
         // // This is the test code I did (on jsfiddle)
