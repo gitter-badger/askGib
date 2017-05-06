@@ -1,32 +1,32 @@
 # askGib
 ## Alexa Skills Kit
 
-Lightweight TypeScript-ified (unofficial) Alexa Skills Kit helper library for AWS Lambda.
+Lightweight, TypeScript-ified, unofficial library for writing Alexa Skills on AWS Lambda.
 
 _NB: This is NOT an official package. Amazon has NOT given any endorsements or anything of that nature. I wanted to use TypeScript for developing Alexa Skills. Read on for further info._
 
 ## Quick Rundown
 
-* [alexa-skills-kit.ts](https://github.com/ibgib/askGib/blob/master/alexa-skills-kit.ts)
+* [alexa-skills-kit.ts](https://github.com/ibgib/askGib/blob/master/src/alexa-skills-kit.ts)
   * TypeScript typings for the [Alexa Skills Kit JSON Interface Reference for Custom Skills](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/alexa-skills-kit-interface-reference).
   * Includes almost everything in that JSON API, including adding JSDoc documentation for all items, including Response, Session, Intent, LaunchRequest, etc.
-* [`AlexaSkill`](https://github.com/ibgib/askGib/blob/master/alexa-skill.ts)
+* [`AlexaSkill`](https://github.com/ibgib/askGib/blob/master/src/alexa-skill.ts)
   * Base class that contains basic plumbing for an Alexa Skill.
   * Includes optional DynamoDB persistence of user information.
     * Response size is limited to 24 Kb. If you need more, you'll need some kind of storage.
-    * See `DynamoRecord` interface in [](https://github.com/ibgib/askGib/blob/master/dynamo-db-helper.ts).
+    * See `DynamoRecord` interface in [](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts).
   * I started with the [AlexaSkill from the Space Geek](https://github.com/amzn/alexa-skills-kit-js/blob/master/samples/spaceGeek/src/AlexaSkill.js) demo code. They are licensing with Apache 2.0. Please visit [their license](http://aws.amazon.com/apache2.0/) for more information.
   * Since the initial conversion, I have adapted it to TypeScript, locked down much of it with typings, and added functionality. So far it seems to be working pretty darn well.
-* [`FuncyAlexaSkill`](https://github.com/ibgib/askGib/blob/master/funcy-alexa-skill.ts)
+* [`FuncyAlexaSkill`](https://github.com/ibgib/askGib/blob/master/src/funcy-alexa-skill.ts)
   * `AlexaSkill` descendant which produces an immutable(ish) `SkillState` based on incoming stimulus.
   * Automatically persists each `SkillState` in `history` in `session.attributes`. 
   * The deriving class implements "transform" functions which examine the stimulus and history. If it applies, then it creates the next `SkillState`. Otherwise it returns null.
     * This allows for organization of handling states and data, similar to a finite state machine, but without the unnecessary rigidity of that paradigm.
-* [`SpeechBuilder`](https://github.com/ibgib/askGib/blob/master/speech-builder.ts)
+* [`SpeechBuilder`](https://github.com/ibgib/askGib/blob/master/src/speech-builder.ts)
   * Helper class that builds up `OutputSpeech` objects with a fluent manner.
   * Functions include `text`, `ssml`, `pause`, `existing`.
     * `existing` can easily weave existing `OutputSpeech` objects with individual text and ssml bits.
-* [`Helper`](https://github.com/ibgib/askGib/blob/master/helper.ts)
+* [`Helper`](https://github.com/ibgib/askGib/blob/master/src/helper.ts)
   * Logging helpers
   * UUID generation
   * Random helpers
@@ -40,7 +40,7 @@ _NB: This is NOT an official package. Amazon has NOT given any endorsements or a
   * This class is still a WIP, as I currently create different instance for each file. 
     * It would be better to have a single service that is instantiated, but for now it works well enough for my use case.
     * Also, the tracing `ib` and `gib` functions could work better with async/promise-based functions.
-* [`DynamoDBHelper`](https://github.com/ibgib/askGib/blob/master/dynamo-db-helper.ts)
+* [`DynamoDBHelper`](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts)
   * Simplistic, promise-based helper class that saves and retrieves a user's `DynamoRecord` based on user id and db table name.
   * Assumes that you have separately created the table in DynamoDB with the given table name.
 
@@ -53,11 +53,6 @@ Install with npm:
 Import ES6 style:
 
 ```typescript
-/**
- * Imports the askGib library, which has AlexaSkill and Amazon Skills
- * Kit (ask) declarations, as well as a helper for logging and other 
- * utils.
- */
 import * as ask from 'ask-gib';
 let h = new ask.Helper();
 ```
@@ -66,7 +61,7 @@ let h = new ask.Helper();
 
 If you use the `AlexaSkill` class, you have to implement the event handlers and many other details. 
 
-If you use the `FuncyAlexaSkill`, then your implementation is grossly simplified. You basically initialize and write transforms that take an incoming stimilus and history and produce a state.
+If you use the more opinionated `FuncyAlexaSkill`, then your implementation is grossly simplified. You basically initialize and write transforms that take an incoming stimilus and history and produce a state. All of the request plumbing, with tracing, is handled for you.
 
 Check out [bibleGib](https://github.com/ibgib/bibleGib) to see what I mean:
 
