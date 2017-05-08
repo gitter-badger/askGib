@@ -22,7 +22,7 @@ _NB: This is NOT an official package. Amazon has NOT given any endorsements or a
 * [`AlexaSkill`](https://github.com/ibgib/askGib/blob/master/src/alexa-skill.ts)
   * Base class that contains basic plumbing for an Alexa Skill.
   * Includes optional DynamoDB persistence of user information.
-    * Response size is limited to 24 Kb. If you need more, you'll need some kind of storage.
+    * Response size is limited to 24 kB. If you need more, you'll need some kind of storage.
     * See [`DynamoRecord` interface](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts).
   * I started with the [AlexaSkill from the Space Geek](https://github.com/amzn/alexa-skills-kit-js/blob/master/samples/spaceGeek/src/AlexaSkill.js) demo code. They are licensing with Apache 2.0. Please visit [their license](http://aws.amazon.com/apache2.0/) for more information.
   * Since the initial conversion, I have adapted it to TypeScript, locked down much of it with typings, and added functionality. So far it seems to be working pretty darn well.
