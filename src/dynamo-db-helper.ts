@@ -15,10 +15,10 @@ export interface DynamoRecord {
  * Simple class that stores data in DynamoDB table in the 
  * given UserId's document.
  * 
+ * Currently, this is just the session attributes.
+ * 
  * This class assumes you have created the table with the given 
  * `dbTableName` and a primary partition key of "UserId" type string.
- * 
- * All it's going to do is 
  */
 export class DynamoDbHelper {
     _db: aws.DynamoDB;
