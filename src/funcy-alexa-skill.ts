@@ -309,17 +309,19 @@ export interface TransformsByName {
 }
 
 /**
- * If a SkillTransform handles the stimulus + prevSkillState, then this 
- * will return a non-null SkillState. If it does not handle it, e.g. if
- * the func does not apply to those args, then it returns null.
+ * This is a function that accepts an incoming stimulus + history of 
+ * `SkillState`s and, if applicable, transforms it into the next 
+ * `SkillState` to be added to the history.
+ * 
+ * If the transform does not apply, it should return `null` and the 
+ * next transform in order will be tried.
  */
 export type SkillTransform = { 
     (stimulus: Stimulus, history: SkillState[]): SkillState | null;
 }
 
 /**
- * The idea is that each interaction in an SkillState is an immutable 
- * thing. I'm just feeling this at right now.
+ * State of a complete request/response for an Alexa Skill.
  */
 export interface SkillState {
     /**
