@@ -23,13 +23,16 @@ _NB: This is NOT an official package. Amazon has NOT given any endorsements or a
   * Base class that contains basic plumbing for an Alexa Skill.
   * Includes optional DynamoDB persistence of user information.
     * Response size is limited to 24 Kb. If you need more, you'll need some kind of storage.
-    * See `DynamoRecord` interface in [](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts).
+    * See [`DynamoRecord` interface](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts).
   * I started with the [AlexaSkill from the Space Geek](https://github.com/amzn/alexa-skills-kit-js/blob/master/samples/spaceGeek/src/AlexaSkill.js) demo code. They are licensing with Apache 2.0. Please visit [their license](http://aws.amazon.com/apache2.0/) for more information.
   * Since the initial conversion, I have adapted it to TypeScript, locked down much of it with typings, and added functionality. So far it seems to be working pretty darn well.
 * [`SpeechBuilder`](https://github.com/ibgib/askGib/blob/master/src/speech-builder.ts)
   * Helper class that builds up `OutputSpeech` objects with a fluent manner.
   * Functions include `text`, `ssml`, `pause`, `existing`.
-    * `existing` can easily weave existing `OutputSpeech` objects with individual text and ssml bits.
+    * `existing` can easily weave existing [`OutputSpeech`](https://github.com/ibgib/askGib/blob/master/src/alexa-skills-kit.ts#L230) objects with individual text and ssml bits.
+* [`DynamoDBHelper`](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts)
+  * Simplistic, promise-based helper class that saves and retrieves a user's `DynamoRecord` based on user id and db table name.
+  * Assumes that you have separately created the table in DynamoDB with the given table name.
 * [`Helper`](https://github.com/ibgib/askGib/blob/master/src/helper.ts)
   * Logging helpers
   * UUID generation
@@ -41,12 +44,9 @@ _NB: This is NOT an official package. Amazon has NOT given any endorsements or a
   * `ib` and `gib` functions for AOP stuff like tracing functions, wrapping in `try/catch` blocks.
     * A little experimental for trying to remove boilerplate code.
     * Used prodigiously in `FuncyAlexaSkill`.
-  * This class is still a WIP, as I currently create different instance for each file. 
+  * This class is still a WIP, as I currently create different instances for each file. 
     * It would be better to have a single service that is instantiated, but for now it works well enough for my use case.
     * Also, the tracing `ib` and `gib` functions could work better with async/promise-based functions.
-* [`DynamoDBHelper`](https://github.com/ibgib/askGib/blob/master/src/dynamo-db-helper.ts)
-  * Simplistic, promise-based helper class that saves and retrieves a user's `DynamoRecord` based on user id and db table name.
-  * Assumes that you have separately created the table in DynamoDB with the given table name.
 
 ## Installation
 

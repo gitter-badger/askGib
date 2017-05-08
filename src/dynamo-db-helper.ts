@@ -67,6 +67,10 @@ export class DynamoDbHelper {
         return h.gib(t, f, /*args*/ null, lc);
     }
 
+    /**
+     * Creates a @type {DynamoRecord} containing the userId and given
+     * sessionAttributes and saves it to t.dbTableName table.
+     */
     save(sessionAttributes: any): Promise<void> {
         let t = this, lc = `DynamoDbHelper.save()`;
 
@@ -109,8 +113,10 @@ export class DynamoDbHelper {
     }
 
     /**
-     * If exists, gets the DynamoRecord (Promise) for `t.userId`.
-     * If doesn't exist, returns null;
+     * Retrieves record for current user from the dynamo db table
+     * of name t.dbTableName.
+     * 
+     * @returns If exists, gets the @type {DynamoRecord} (Promise) for * `t.userId`. If doesn't exist, returns null
      */
     get(): Promise<string> {
         let t = this, lc = `DynamoDbHelper.get()`;
@@ -147,9 +153,11 @@ export class DynamoDbHelper {
     }
 
     /**
-     * Checks to see if table exists. Returns Promise<boolean>.
+     * Checks to see if table exists. 
      * 
-     * @param tableName is name of table, db is DynamoDB ref
+     * @param tableName is name of table, db is DynamoDB ref 
+     * 
+     * @returns Promise<boolean> true if exist, else false.
      */
     tableExists(): Promise<boolean> {
         let t = this, lc = `DynamoDB tableExists(${t.dbTableName})`;

@@ -242,6 +242,10 @@ export class Helper implements IHelper {
         return text;
     }
 
+    /**
+     * Picks a random item from an array. Just a Math.floor(Math.random
+     * * array.length) function.
+     */
     randomItem<T>(array: Array<T>): T {
         if (!array) { throw new Error('array required'); }
         if (array.length === 0) {
@@ -252,9 +256,11 @@ export class Helper implements IHelper {
     }
 
     /**
-     * Wraps strings in <p> tags and wraps the entire thing with <speak>
+     * Wraps a given list of paragraph strings in `<speak>` tags, with
+     * optional paragraph `<p>` tags.
      * 
      * @param paras individual paragraphs to be wrapped in <p></p> tags.
+     * @param addParaTags If true, wraps individual strings in paras with `<p>` tags. Otherwise just concats.
      */
     wrapSsmlSpeak(paras: string[], addParaTags: boolean = true): string {
         let result = 
@@ -267,11 +273,15 @@ export class Helper implements IHelper {
     }
 
     /**
-     * This simply replaces <speak> with an empty string.
-     * Use this when you want to add some text in and then re-wrap
-     * the ssml.
+     * This simply replaces <speak> and </speak> tags with an empty 
+     * string.
      * 
-     * @param ssml ssml with <speak> tag around the whole thing.
+     * Use this when you want to add some text to existing ssml and 
+     * then re-wrap the ssml.
+     * 
+     * @see {Helper.stripSsml} function.
+     * 
+     * @param ssml with <speak> tag around the whole thing.
      */
     unwrapSsmlSpeak(ssml: string): string {
         return ssml.replace(/\<speak\>/g, "").replace(/\<\/speak\>/g, "");
@@ -279,7 +289,10 @@ export class Helper implements IHelper {
 
     /**
      * Strips all tags within ssml to produce plain text.
-     * @param ssml ssml to strip
+     * 
+     * @see {Helper.unwrapSsmlSpeak} function.
+     * 
+     * @param ssml to strip
      */
     stripSsml(ssml: string): string {
         let stripped = 
@@ -335,11 +348,8 @@ export class Helper implements IHelper {
     }
 
     /**
-     * Creates an ssml string of the given text and wraps it in a 
-     * phoneme tag with the given pronunciation and alphabet.
-     * 
-     * I'm basically making this because I don't want to have to 
-     * memorize the details of the phoneme tag.
+     * Wraps a given text in an ssml phoneme tag with the given
+     * pronunciation and alphabet.
      * 
      * @param text Literal text that we're wrapping the phoneme tag around, e.g. "sewing".
      * @param pronunciation the phoneme itself, e.g. "soʊɪŋ"
@@ -353,6 +363,14 @@ export class Helper implements IHelper {
         return `<phoneme alphabet="${alphabet}" ph="${pronunciation}">${text}</phoneme>`
     }
 
+    /** 
+     * Wraps a given text in an ssml emphasis tag.
+     * 
+     * e.g. <emphasis level="${level}">${text}</emphasis>`
+     * 
+     * @param text to wrap with the emphasis tag
+     * @param level attribute in emphasis tag. Valid values "strong" | "moderate" | "reduced" = "moderate"
+     */
     emphasis(
         text: string,
         level: "strong" | "moderate" | "reduced" = "moderate"
@@ -360,6 +378,14 @@ export class Helper implements IHelper {
         return `<emphasis level="${level}">${text}</emphasis>`
     }
 
+    /**
+     * Wraps a given text in an ssml prosody tag with the given 
+     * options of rate, pitch, and/or volume.
+     * 
+     * @param rate valid values ATOW "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
+     * @param pitch valid values ATOW "x-low" | "low" | "medium" | "high" | "x-high" | number,
+     * @param volume valid values ATOW "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
+     */
     prosody(
         text: string,
         { 
@@ -414,6 +440,8 @@ export class Helper implements IHelper {
      * The `gib` function will immediately invoke function `f`.
      * 
      * Often, I find myself creating closures for `f` and passing null for the args.
+     * 
+     * @see {gib}
      * 
      * @param f Function to execute, wrapped in try/c/f w or w/o logging
      * @param args Args to pass to function. Pass null if no args (e.g. when using a closure.)
@@ -500,6 +528,8 @@ export class Helper implements IHelper {
      * 
      * Often, I find myself creating closures for `f` and passing null for the args.
      * 
+     * @see {ib}
+     * 
      * @param f Function to execute, wrapped in try/c/f w or w/o logging
      * @param args Args to pass to function. Pass null if no args (e.g. when using a closure.)
      * @param lc Optional log context. Defaults to f.name.
@@ -571,15 +601,22 @@ export class Helper implements IHelper {
         obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
     }
 
+    /**
+     * Naive clone function that just stringifies then parses obj.
+     */
     clone<T>(obj: T): T {
         return <T>JSON.parse(JSON.stringify(obj));
     }
     
     // ---------------------------------------
-    // User Identification (I'm not sure if I use these yet honestly.)
+    // User Identification
+    // (I don't think I'm using these at all.)
     // ---------------------------------------
 
+    /** @deprecated */
     locationId: string;
+    /** @deprecated */
     currentUserId: string;
+    /** @deprecated */
     currentDeviceId: string;
 }

@@ -23,15 +23,6 @@ export class SpeechBuilder {
         let t = this, lc = `${t.constructor.name}.ctor`;
 
         h.log(`t: ${JSON.stringify(t)}`, "debug", 0, lc);
-        // h.wrapFuncs(
-        //     t, 
-        //     [
-        //         t.text.name, 
-        //         t.ssml.name, 
-        //         t.pause.name, 
-        //         t.outputSpeech.name
-        //     ]
-        // );
     }
 
     private _bits: SpeechBit[] = [];
@@ -42,6 +33,12 @@ export class SpeechBuilder {
      */
     static with(): SpeechBuilder { return new SpeechBuilder(); }
 
+    /**
+     * Adds a bit of speech corresponding to bare (non-ssml/tagged) 
+     * text.
+     * 
+     * @param text text to add to the builder
+     */
     text(text: string): SpeechBuilder {
         let t = this;
         let bit: SpeechBit = {
@@ -52,6 +49,17 @@ export class SpeechBuilder {
         return t;
     } 
 
+    /**
+     * Adds a bit of speech corresponding to existing ssml. 
+     * 
+     * NOTE: This ssml should **NOT** contain a `<speak>` tag, as this 
+     * is not automatically stripped. Also, if you choose 
+     * `newParagraph`, ssml should **NOT** contain any hard-coded <p> 
+     * tags
+     * 
+     * @param ssml ssml to add to the builder. See NOTE in function description.
+     * @param newParagraph if true, wraps ssml in <p> tags. See NOTE in function description.
+     */
     ssml(ssml: string, newParagraph: boolean = false): SpeechBuilder {
         let t = this;
         let bit = {
@@ -62,6 +70,12 @@ export class SpeechBuilder {
         return t;
     }
 
+    /**
+     * Adds a pause (<break> tag) in the speech builder.
+     * Equivalent to `<break='${seconds}s'/>` ATOW.
+     * 
+     * @param seconds amount of time to pause.
+     */
     pause(seconds: number): SpeechBuilder {
         let t = this;
         let bit = {
@@ -72,16 +86,18 @@ export class SpeechBuilder {
         return t;
     }
 
-    // appendedTo(outputSpeech: ask.OutputSpeech): SpeechBuilder {
-    //     let t = this;
-    //     let bit: SpeechBit = {
-    //         type: SpeechBitType.existingOutputSpeech,
-    //         value: outputSpeech
-    //     }
-    //     t._bits = [bit].concat(t._bits);
-    //     return t;
-    // }
-
+    /**
+     * Takes text and/or ssml from existing `OutputSpeech` 
+     * object and adds it to the builder.
+     * 
+     * For example, say you already have an outputSpeech and you just 
+     * want to add an intro text to it. You would create the builder,
+     * add the intro text via `text` function and then call this
+     * function with your existing outputSpeech.
+     * 
+     * @example `let outputWithIntro = ask.SpeechBuilder.with().text('Some intro text').existing(prevOutputSpeech).outputSpeech();`
+     * @param outputSpeech existing `OutputSpeech` to weave into the builder. 
+     */
     existing(outputSpeech: ask.OutputSpeech): SpeechBuilder {
         let t = this;
         let bit: SpeechBit = {
@@ -92,6 +108,9 @@ export class SpeechBuilder {
         return t;
     }
 
+    /**
+     * Creates an `OutputSpeech` from the builder's state.
+     */
     outputSpeech(): ask.OutputSpeech {
         let t = this, lc = `outputSpeech`;
         let text = "", ssml = "";
@@ -163,28 +182,6 @@ export class SpeechBuilder {
         return output;
     }
 }
-
-// export type SpeechBuildOp = "new" | "append" | "prepend";
-// /**
-//  * Determines the builder's operation "mode" for lack of a better 
-//  * word. Just read the individual choice docs! :-O
-//  */
-// export const SpeechBuildOp = {
-//     /**
-//      * Creating a brand new OutputSpeech (ATOW 2017/04/27).
-//      */
-//     new: "new" as SpeechBuildOp,
-//     /**
-//      * Adding on to the end of an existing OutputSpeech. 
-//      */
-//     append: "append" as SpeechBuildOp,
-//     /**
-//      * Building on an existing OutputSpeech, but inserting _before_ 
-//      * that speech's text/ssml. This is useful for adding an intro, 
-//      * or prompt, etc.
-//      */
-//     prepend: "prepend" as SpeechBuildOp,
-// }
 
 export type SpeechBitType = 
     "text" | "ssml" | "break" | "phoneme" | "existingOutputSpeech";
