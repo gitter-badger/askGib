@@ -4,12 +4,14 @@
         "target": "es6",
         "noImplicitAny": false,
         "outDir": "../testsbin",
-        "rootDir": "./",
+        "rootDir": "../",
         "sourceMap": true,
         "declaration": true
-    }
-    // "exclude": [
-    //     "../bin",
-    //     "../node_modules"
-    // ]
+    },
+    "exclude": [
+        "../.vscode",
+        "../bin",
+        "../node_modules",
+        "../testbin"
+    ]
 }

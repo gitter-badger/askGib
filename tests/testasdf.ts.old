@@ -1,2 +1,0 @@
-export * from './testfolder1/hello';
-export * from './testfolder2/hello';
