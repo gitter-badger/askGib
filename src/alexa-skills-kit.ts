@@ -131,7 +131,7 @@ export interface Slot {
 }
 
 /** A SessionEndedRequest is an object that represents a request made to an Alexa skill to notify that a session was ended. */
-export interface SessionEndedRequest {
+export interface SessionEndedRequest extends AlexaRequest {
     /**
      * Describes why the session ended. Possible values:
      *   USER_INITIATED: The user explicitly ended the session.
