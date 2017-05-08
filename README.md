@@ -170,4 +170,4 @@ See the code JSDocs for more information. If you have any questions at all, don'
 
 * Amazon for creating such good documentation and a good product.
 * The official [Alexa Skills Kit SDK for Node.js](https://github.com/alexa/alexa-skills-kit-sdk-for-nodejs)
-  * This is where I got the idea for the simple DynamoDB table per user approach :+1:
+  * This is where I got the idea for the simple DynamoDB table persistence approach :+1:
