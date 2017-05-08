@@ -82,3 +82,9 @@ Check out [bibleGib](https://github.com/ibgib/bibleGib) to see what I mean:
 ## Additional Information
 
 See the code JSDocs for more information. If you have any questions at all, don't hesitate to [create an issue](https://github.com/ibgib/askGib/issues/) and I'll be glad to do what I can to help.
+
+## Thanks
+
+* Amazon for creating such good documentation and a good product.
+* The official [Alexa Skills Kit SDK for Node.js](https://github.com/alexa/alexa-skills-kit-sdk-for-nodejs)
+  * This is where I got the idea for the simple DynamoDB table per user approach :+1:
