@@ -1,5 +1,5 @@
 # scope emoji summaries
-askGib:construction:
+askGib:white_check_mark:
 # *:notes:
 # *:
 # Blank line
@@ -11,14 +11,14 @@ askGib:construction:
 # Attributes
 # attr: wip - not building
 # attr: wip - tests failing
-attr: wip - just checking in
+# attr: wip - just checking in
 # attr: minor
 # attr: meta
 
 # Blank line
 
 # Issue tracking
-issue: relates to #1
+issue: relates to #5
 # issue: closes #
 
 # Emoji

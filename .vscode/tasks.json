@@ -1,10 +1,27 @@
 {
-	// See http://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "0.1.0",
-	"command": "tsc",
-	"isShellCommand": true,
-	"args": ["-p", "."],
-	"showOutput": "silent",
-	"problemMatcher": "$tsc"
+    // See http://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "tsc",
+            "isBuildCommand": true,
+            "isShellCommand": true,
+            // "command": "tsc",
+            // "args": ["-p", "./src", "--outDir", "./bin"],
+            "command": "npm",
+            "args": [ "run", "build" ],
+            "showOutput": "silent",
+            "problemMatcher": "$tsc"
+        },
+        {
+            "taskName": "mochatest",
+            // "isTestCommand": true,
+            "isShellCommand": true,
+            "command": "npm",
+            "args": [ "run", "test" ],
+            "showOutput": "always"
+            // "problemMatcher": "$tsc"
+        }
+    ]
 }
