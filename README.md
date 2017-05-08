@@ -75,92 +75,93 @@ Check out [bibleGib](https://github.com/ibgib/bibleGib) to see what I mean:
   * Inside the [ctor](https://github.com/ibgib/bibleGib/blob/ab93a180d3e54d8e3170ec56dc2ba70ab5fa0d45/src/skill.ts#L26), the `transformsByName` property is initialized with the intent names (or launch request) mapped to the corresponding transform arrays.
     * The order here is important, as the first transform to return a non-`null` `SkillState` wins (similar to pattern matching).
     * Be sure to include a transform for the bare launch request, e.g. `t.transformsByName[t.getLaunchRequestName()] = [t.transformWelcome];`
-```typescript
-t.transformsByName = {
-    "WelcomeIntent": [t.transformWelcome],
-    "AMAZON.HelpIntent": [t.transformHelpBlankOut, t.transformHelpDefault],
-    "HearTheWordIntent": [t.transformHearTheWord, t.transformHelpDefault],
-    "RetainTheWordIntent": [t.transformRetainTheWord, t.transformHelpDefault],
-    "AnswerIntent": [t.transformAnswerWaterBlankOut, t.transformHelpDefault],
-    "IDontKnowIntent": [t.transformAnswerWaterBlankOut, t.transformHelpDefault],
-    "AnswerOnlyIntent": [t.transformYesIntent, t.transformAnswerWaterBlankOut, t.transformHelpDefault],
-    "AMAZON.YesIntent": [t.transformYesIntent, t.transformHelpDefault],
-    "AMAZON.RepeatIntent": [t.transformRepeat],
-    "AMAZON.CancelIntent": [t.transformGoodbye],
-    "AMAZON.StopIntent": [t.transformGoodbye],
-    "ThankYouIntent": [t.transformGoodbye],
-}
-```
+    ```typescript
+    t.transformsByName = {
+        "WelcomeIntent": [t.transformWelcome],
+        "AMAZON.HelpIntent": [t.transformHelpBlankOut, t.transformHelpDefault],
+        "HearTheWordIntent": [t.transformHearTheWord, t.transformHelpDefault],
+        "RetainTheWordIntent": [t.transformRetainTheWord, t.transformHelpDefault],
+        "AnswerIntent": [t.transformAnswerWaterBlankOut, t.transformHelpDefault],
+        "IDontKnowIntent": [t.transformAnswerWaterBlankOut, t.transformHelpDefault],
+        "AnswerOnlyIntent": [t.transformYesIntent, t.transformAnswerWaterBlankOut, t.transformHelpDefault],
+        "AMAZON.YesIntent": [t.transformYesIntent, t.transformHelpDefault],
+        "AMAZON.RepeatIntent": [t.transformRepeat],
+        "AMAZON.CancelIntent": [t.transformGoodbye],
+        "AMAZON.StopIntent": [t.transformGoodbye],
+        "ThankYouIntent": [t.transformGoodbye],
+    }
+    ```
   * Inside each transform function, first you analyze the incoming stimulus (intent usually) and history. If the transform applies, then you do your thing and create the next `SkillState` which will automatically be persisted in the history until the next incoming stimulus and history. If the transform does not apply, then return `null`.
     * See the [transformYesIntent](https://github.com/ibgib/bibleGib/blob/ab93a180d3e54d8e3170ec56dc2ba70ab5fa0d45/src/skill.ts#L376) as an example of this.
-```typescript
-transformYesIntent: ask.SkillTransform = (
-    stimulus: ask.Stimulus, 
-    history: ask.SkillState[]
-): ask.SkillState => {
-    let t = this, lc = `transformYesIntent`;
-    let f = () => {
-        let prevSkillState = 
-            t.getPrevSkillState(
-                history.filter(s => 
-                    !s.interaction.context || 
-                    !s.interaction.context.isHelp
-                )
-            );
-        if (
-            !prevSkillState || 
-            !["home", "hearing"]
-                .includes(prevSkillState.location) ||
-            t.getPreviousAnswer(history) // cull AnswerOnlyIntent
-        ) {
-            // doesn't apply to this transform
-            h.log(`skipping transform...`, "debug", 0, lc);
-            return null;
-        }
+    ```typescript
+    transformYesIntent: ask.SkillTransform = (
+        stimulus: ask.Stimulus, 
+        history: ask.SkillState[]
+    ): ask.SkillState => {
+        let t = this, lc = `transformYesIntent`;
+        let f = () => {
+            let prevSkillState = 
+                t.getPrevSkillState(
+                    history.filter(s => 
+                        !s.interaction.context || 
+                        !s.interaction.context.isHelp
+                    )
+                );
+            if (
+                !prevSkillState || 
+                !["home", "hearing"]
+                    .includes(prevSkillState.location) ||
+                t.getPreviousAnswer(history) // cull AnswerOnlyIntent
+            ) {
+                // doesn't apply to this transform
+                h.log(`skipping transform...`, "debug", 0, lc);
+                return null;
+            }
 
-        if (prevSkillState.location === "home") {
-            return t.transformHearTheWord(stimulus, history);
-        } else if (prevSkillState.location === "hearing") {
-            return t.transformRetainTheWord(stimulus, history);
+            if (prevSkillState.location === "home") {
+                return t.transformHearTheWord(stimulus, history);
+            } else if (prevSkillState.location === "hearing") {
+                return t.transformRetainTheWord(stimulus, history);
+            }
         }
+        let fResult = h.gib(t, f, /*args*/ null, lc);
+
+        h.log(`fResult: ${JSON.stringify(fResult)}`, "debug", 0, lc);
+
+        return fResult;
     }
-    let fResult = h.gib(t, f, /*args*/ null, lc);
-
-    h.log(`fResult: ${JSON.stringify(fResult)}`, "debug", 0, lc);
-
-    return fResult;
-}
-```
+    ```
 * [index.ts skill handler](https://github.com/ibgib/bibleGib/blob/master/src/index.ts#L37) shows how I'm creating the async lambda handler.
   * I've had some occasional funny blips with DynamoDB storage not retrieving the correct value in a timely manner. There _may_ be a race condition somewhere that I just haven't found yet, or this could be some kind of Lambda/DynamoDB thing. I'm still investigating.
-```typescript
-// Create the handler that responds to the Alexa Request.
-export var handler = function (event, context, callback) {
-    let lc = `index handler`;
+  ```typescript
+  // Create the handler that responds to the Alexa Request.
+  export var handler = function (event, context, callback) {
+      let lc = `index handler`;
 
-    h.logFuncStart(lc);
-    try {
-        // Create an instance of the BibleSeeds skill.
-        var bibleSeeds = new BibleSeeds(APP_ID, DB_NAME);
+      h.logFuncStart(lc);
+      try {
+          // Create an instance of the BibleSeeds skill.
+          var bibleSeeds = new BibleSeeds(APP_ID, DB_NAME);
 
-        // await bibleSeeds.execute(event, context);
-        bibleSeeds.execute(event, context)
-        .then(() => {
-            h.log(`handler execute callback`, "debug", 0, lc);
-            callback();
-        })
-        .catch(errYo => {
-            h.logError(`errYo`, errYo, lc);
-            callback();
-        });
+          // await bibleSeeds.execute(event, context);
+          bibleSeeds.execute(event, context)
+          .then(() => {
+              h.log(`handler execute callback`, "debug", 0, lc);
+              callback();
+          })
+          .catch(errYo => {
+              h.logError(`errYo`, errYo, lc);
+              callback();
+          });
 
-        h.logFuncComplete(lc);
-    } catch (errExec) {
-        h.logError(`errExec`, errExec, lc);
-        // callback();
-    }
-};
-```
+          h.logFuncComplete(lc);
+      } catch (errExec) {
+          h.logError(`errExec`, errExec, lc);
+          // callback();
+      }
+  };
+  ```
+
 ## Additional Information
 
 See the code JSDocs for more information. If you have any questions at all, don't hesitate to [create an issue](https://github.com/ibgib/askGib/issues/) and I'll be glad to do what I can to help.
