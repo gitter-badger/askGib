@@ -52,6 +52,11 @@ export interface IHelper {
     currentDeviceId: string;
 }
 
+/**
+ * Implementation of {IHelper}.
+ * 
+ * @see {IHelper}
+ */
 export class Helper implements IHelper {
     // ---------------------------------------
     // Logging
@@ -256,182 +261,6 @@ export class Helper implements IHelper {
     }
 
     /**
-     * Wraps a given list of paragraph strings in `<speak>` tags, with
-     * optional paragraph `<p>` tags.
-     * 
-     * @param paras individual paragraphs to be wrapped in <p></p> tags.
-     * @param addParaTags If true, wraps individual strings in paras with `<p>` tags. Otherwise just concats.
-     */
-    wrapSsmlSpeak(paras: string[], addParaTags: boolean = true): string {
-        let result = 
-            "<speak>" + 
-            paras.reduce((agg, p) => {
-                return addParaTags ? agg + "<p>" + p + "</p>" : agg + p;
-            }, "") +
-            "</speak>";
-        return result;
-    }
-
-    /**
-     * This simply replaces <speak> and </speak> tags with an empty 
-     * string.
-     * 
-     * Use this when you want to add some text to existing ssml and 
-     * then re-wrap the ssml.
-     * 
-     * @see {Helper.stripSsml} function.
-     * 
-     * @param ssml with <speak> tag around the whole thing.
-     */
-    unwrapSsmlSpeak(ssml: string): string {
-        return ssml.replace(/\<speak\>/g, "").replace(/\<\/speak\>/g, "");
-    }
-
-    /**
-     * Strips all tags within ssml to produce plain text.
-     * 
-     * @see {Helper.unwrapSsmlSpeak} function.
-     * 
-     * @param ssml to strip
-     */
-    stripSsml(ssml: string): string {
-        let stripped = 
-            ssml
-                // Combines </p> <p> to not double para breaks
-                .replace(/\<\/p\>[ ]*\<p\>/g, "<p>")
-                // remove spaces after <p>,</p> tags
-                .replace(/\<p\>(?=[ ])/g, "<p>")
-                .replace(/\<\/p\>(?=[ ])/g, "</p>")
-                // convert <p> and </p> to two new lines
-                .replace(/\<[\/]*p\>/g, "\n\n")
-                // Strip all remaining tags
-                .replace(/(<([^>]*)>)/ig, "")
-                // Replace multiple spaces with a single space
-                .replace(/  +/g, ' ')
-                .replace(/\\n\\n\\n/g, "\n\n")
-                .replace(/^\\n+/, "");
-        return stripped;
-
-        // // This is the test code I did (on jsfiddle)
-        // // for testing stripSsml function.
-        // // I really need to get some unit testing going...
-        // function stripSsml(ssml) {
-        //         let stripped = 
-        //             ssml
-        //             		// Combines </p> <p> to not double para breaks
-        //                 .replace(/\<\/p\>[ ]*\<p\>/g, "<p>")
-        //                 // remove spaces after <p>,</p> tags
-        //                 .replace(/\<p\>[ ]/g, "<p>")
-        //                 .replace(/\<\/p\>[ ]/g, "</p>")
-        //                 // convert <p> and </p> to two new lines
-        //                 .replace(/\<[\/]*p\>/g, "\n\n")
-        //                 // Strip all remaining tags
-        //                 .replace(/(<([^>]*)>)/ig, "")
-        //                 // Replace multiple spaces with a single space
-        //                 .replace(/  +/g, ' ');
-        //         return stripped;
-        //     }
-
-        // let ssml = `<speak>This is some text. <p>This is in a paragraph.</p> All of this has ssml stuff <break="1s" /> yo. <p>This <phoneme alphabet="ipa" ph="pɪˈkɑːn">pecan</phoneme> tastes good!</p> <p> This is another paragraph.</p></speak>`;
-
-        // let ssmlStripped = stripSsml(ssml);
-
-        // //let ssmlStripped = 
-        // //  ssml.replace(/\<\/p\>\W/g, "</p>")
-        // //    .replace(/\<[\/]*p\>/g, "\n\n")
-        // //    .replace(/(<([^>]*)>)/ig, "")
-        // //    .replace(/  +/g, ' ');
-
-        // console.log(ssml);
-        // console.log(ssmlStripped);
-
-    }
-
-    /**
-     * Wraps a given text in an ssml phoneme tag with the given
-     * pronunciation and alphabet.
-     * 
-     * @param text Literal text that we're wrapping the phoneme tag around, e.g. "sewing".
-     * @param pronunciation the phoneme itself, e.g. "soʊɪŋ"
-     * @param alphabet phoneme alphabet, either "ipa" or "x-sampe" (ATOW)
-     */
-    phoneme(
-        text: string,
-        pronunciation: string, 
-        alphabet: "ipa" | "x-sampa" = "ipa"
-    ): string{
-        return `<phoneme alphabet="${alphabet}" ph="${pronunciation}">${text}</phoneme>`
-    }
-
-    /** 
-     * Wraps a given text in an ssml emphasis tag.
-     * 
-     * e.g. <emphasis level="${level}">${text}</emphasis>`
-     * 
-     * @param text to wrap with the emphasis tag
-     * @param level attribute in emphasis tag. Valid values "strong" | "moderate" | "reduced" = "moderate"
-     */
-    emphasis(
-        text: string,
-        level: "strong" | "moderate" | "reduced" = "moderate"
-    ) {
-        return `<emphasis level="${level}">${text}</emphasis>`
-    }
-
-    /**
-     * Wraps a given text in an ssml prosody tag with the given 
-     * options of rate, pitch, and/or volume.
-     * 
-     * @param rate valid values ATOW "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
-     * @param pitch valid values ATOW "x-low" | "low" | "medium" | "high" | "x-high" | number,
-     * @param volume valid values ATOW "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
-     */
-    prosody(
-        text: string,
-        { 
-            rate, 
-            pitch, 
-            volume
-        }: {
-            rate?: "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
-            pitch?: "x-low" | "low" | "medium" | "high" | "x-high" | number,
-            volume?: "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
-    }): string {
-        // need to add the + to positive numbers
-        let rateText = 
-            rate && !isNaN(<number>rate) ?
-            rate + "%" :
-            rate;
-        let pitchText; 
-        if (pitch && !isNaN(<number>pitch) && pitch > 0) {
-            pitchText = "+" + <number>pitch + "%";
-        } else if (pitch && !isNaN(<number>pitch)) {
-            pitchText = "-" + <number>pitch + "%";
-        } else {
-            // word value or falsy
-            pitchText = pitch || "";
-        } 
-        
-        let volumeText;
-        if (volume && !isNaN(<number>volume) && volume > 0) {
-            volumeText = "+" + <number>volume + "%";
-        } else if (volume && !isNaN(<number>volume)) {
-            volumeText = "-" + <number>volume + "%";
-        } else {
-            // word value or falsy
-            volumeText = volume || "";
-        }        
-        
-        return "<prosody " +
-          (rate ? `rate="${rateText}"` : "") +
-          (pitch ? `pitch="${pitchText}"` : "") +
-          (volume ? `volume="${volumeText}"` : "") +
-          ">" +
-          text + 
-          "</prosody>"
-    }
-
-    /**
      * Wraps a function `f` in a try/catch/(finally) block with 
      * optional tracing.
      * 
@@ -572,34 +401,34 @@ export class Helper implements IHelper {
      * @param obj 
      * @param funcNames 
      */
-    wrapFuncs(obj: Object, funcNames: string[]): void {
-        let t = this;
+    // wrapFuncs(obj: Object, funcNames: string[]): void {
+    //     let t = this;
 
-        t.log("wrap funcs whaaaa", "debug", 0, "wrapFuncs huh");
-        funcNames.forEach(funcName => {
-            t.wrapFunc(obj, funcName);
-        });
-    }
-    /**
-     * I'm still playing with learning JS (and es6) stuff, so I'm 
-     * adding functions dynamically and doing the wrapping here in 
-     * this small builder class.
-     * 
-     * So this addFunc takes a function, uses its name to generate the
-     * lc (log context), and then calls h.gib on the function. _That_
-     * function wraps it in a try/catch with trace logging using the lc.
-     * 
-     * @param fn should be named with trailing Fn, so a function foo would be fooFn. Else use fnName
-     * @param fnName 
-     */
-    wrapFunc(obj: Object, fnName: string) {
-        let t = this;
-        let fn: Function = obj[fnName];
-        if (!fn) { throw new Error(`invalid fnName: ${fnName}. Not found on object.`)}
-        let lc = obj.constructor.name + "." + fnName;
-        t.log(`yo wrap funnnncy`, "debug", 0, lc);
-        obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
-    }
+    //     t.log("wrap funcs whaaaa", "debug", 0, "wrapFuncs huh");
+    //     funcNames.forEach(funcName => {
+    //         t.wrapFunc(obj, funcName);
+    //     });
+    // }
+    // /**
+    //  * I'm still playing with learning JS (and es6) stuff, so I'm 
+    //  * adding functions dynamically and doing the wrapping here in 
+    //  * this small builder class.
+    //  * 
+    //  * So this addFunc takes a function, uses its name to generate the
+    //  * lc (log context), and then calls h.gib on the function. _That_
+    //  * function wraps it in a try/catch with trace logging using the lc.
+    //  * 
+    //  * @param fn should be named with trailing Fn, so a function foo would be fooFn. Else use fnName
+    //  * @param fnName 
+    //  */
+    // wrapFunc(obj: Object, fnName: string) {
+    //     let t = this;
+    //     let fn: Function = obj[fnName];
+    //     if (!fn) { throw new Error(`invalid fnName: ${fnName}. Not found on object.`)}
+    //     let lc = obj.constructor.name + "." + fnName;
+    //     t.log(`yo wrap funnnncy`, "debug", 0, lc);
+    //     obj[fnName] = t.ib(obj, fn, Array.from(arguments), lc);
+    // }
 
     /**
      * Naive clone function that just stringifies then parses obj.

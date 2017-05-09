@@ -1,10 +1,12 @@
 {
   "name": "ask-gib",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight TypeScript-ified (unofficial) Alexa Skills Kit helper library. Includes a base AlexaSkill class with optional DynamoDB persistence of session attributes, a FuncyAlexaSkill that is more functional in approach, helper class for logging and utils, and more. Read the readme for more details.",
   "main": "bin/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p . --outDir ./bin",
+    "build:test": "tsc -p ./tests --outDir ./testbin",
+    "test": "npm run build:test"
   },
   "repository": {
     "type": "git",
@@ -31,9 +33,15 @@
   },
   "homepage": "https://github.com/ibgib/askGib",
   "dependencies": {
-    "aws-sdk": "^2.48.0"
+    "aws-sdk": "^2.48.0",
+    "typescript": "^2.3.2"
   },
   "devDependencies": {
-    "@types/node": "^7.0.15"
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.15",
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3",
+    "ts-node": "^3.0.4"
   }
 }
