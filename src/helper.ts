@@ -367,19 +367,26 @@ export class Helper implements IHelper {
             pitch, 
             volume
         }: {
-            rate?: "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
-            pitch?: "x-low" | "low" | "medium" | "high" | "x-high" | number,
-            volume?: "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
+            rate?: ProsodyRateType,
+            // rate?: "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
+            pitch?: ProsodyPitchType,
+            // pitch?: "x-low" | "low" | "medium" | "high" | "x-high" | number,
+            volume?: ProsodyVolumeType
+            // volume?: "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
     }): string {
         let t = this, lc = `prosody`;
+        let attrs = "";
 
         // adds the + to positive numbers
         let rateText = 
             rate && !isNaN(<number>rate) ?
             rate + "%" :
             rate;
+        attrs += (rate ? `rate="${rateText}"` : "");
+        
         let pitchText; 
         if (pitch && !isNaN(<number>pitch) && pitch > 0) {
+            attrs = attrs ? attrs + " " : attrs;
             let max = 50;
             let pitchNum = <number>pitch;
             if (pitchNum > max) {
@@ -387,19 +394,25 @@ export class Helper implements IHelper {
             }
             pitchText = "+" + pitchNum + "%";
         } else if (pitch && !isNaN(<number>pitch)) {
+            attrs = attrs ? attrs + " " : attrs;
             let min = -33.3;
             let pitchNum = <number>pitch;
             if (pitchNum < min) {
                 t.log(`min: ${min}, actual: ${pitchNum}`, "warn", 2, lc);
             }
             pitchText = pitchNum + "%";
+        } else if (pitch) {
+            attrs = attrs ? attrs + " " : attrs;
+            pitchText = pitch;
         } else {
             // word value or falsy
-            pitchText = pitch || "";
-        } 
-        
+            pitchText = "";
+        }
+        attrs += (pitch ? `pitch="${pitchText}"` : "");
+
         let volumeText;
         if ((volume || volume === 0) && !isNaN(<number>volume) && volume >= 0) {
+            attrs = attrs ? attrs + " " : attrs;
             let max = 4.08;
             let volumeNum = <number>volume;
             if (volumeNum > max) {
@@ -407,24 +420,23 @@ export class Helper implements IHelper {
             }
             volumeText = "+" + volumeNum + "%";
         } else if (volume && !isNaN(<number>volume)) {
+            attrs = attrs ? attrs + " " : attrs;
             let min = -12;
             let volumeNum = <number>volume;
             if (volumeNum < min) {
                 t.log(`min: ${min}, actual: ${volumeNum}`, "warn", 2, lc);
             }
            volumeText = volumeNum + "%";
+        } else if (volume) {
+            attrs = attrs ? attrs + " " : attrs;
+            volumeText = volume;
         } else {
             // word value or falsy
-            volumeText = volume || "";
+            volumeText = "";
         }        
-        
-        return "<prosody " +
-          (rate ? `rate="${rateText}"` : "") +
-          (pitch ? `pitch="${pitchText}"` : "") +
-          (volume ? `volume="${volumeText}"` : "") +
-          ">" +
-          text + 
-          "</prosody>"
+        attrs += (volume ? `volume="${volumeText}"` : "");
+
+        return "<prosody " + attrs + ">" + text + "</prosody>";
     }
 
     /**
@@ -616,3 +628,7 @@ export class Helper implements IHelper {
     /** @deprecated */
     currentDeviceId: string;
 }
+
+export type ProsodyRateType = "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number;
+export type ProsodyPitchType = "x-low" | "low" | "medium" | "high" | "x-high" | number;
+export type ProsodyVolumeType = "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number;

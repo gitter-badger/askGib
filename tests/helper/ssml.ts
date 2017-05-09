@@ -139,4 +139,15 @@ describe(`helper ssml`, () => {
         let prosody = h.prosody(funk, {volume: volume});
         expect(prosody).to.equal(`<prosody volume="${volume}%">${funk}</prosody>`);
     });
+    it(`prosody, rate, pitch, volume`, () => {
+        let rate: ask.ProsodyRateType = "slow", 
+            pitch: ask.ProsodyPitchType = "low", 
+            volume: ask.ProsodyVolumeType = "soft";
+        let prosody = h.prosody(funk, {
+            rate: rate,
+            pitch: pitch, 
+            volume: volume
+        });
+        expect(prosody).to.equal(`<prosody rate="slow" pitch="low" volume="soft">Funktacular</prosody>`);
+    });
 });
