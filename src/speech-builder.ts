@@ -132,7 +132,9 @@ export class SpeechBuilder {
                     break;
                 case "ssml":
                     h.log(`ssml in case`, "debug", 0, lc);
-                    text += h.stripSsml(<string>bit.value);
+                    // do these in two steps to fully strip ssml.
+                    text += bit.value;
+                    text = h.stripSsml(text); 
                     ssml += bit.value;
                     break;
                 case "break":
@@ -157,7 +159,9 @@ export class SpeechBuilder {
                         h.log(`existing ssml only`, "debug", 0, lc);
                         let unwrapped = 
                             h.unwrapSsmlSpeak(existing.ssml);
-                        text += h.stripSsml(unwrapped);
+                        // do these in two steps to fully strip ssml.
+                        text += unwrapped;
+                        text = h.stripSsml(text);
                         ssml += unwrapped;
                     }
                     break;

@@ -309,42 +309,10 @@ export class Helper implements IHelper {
                 // Replace multiple spaces with a single space
                 .replace(/  +/g, ' ')
                 .replace(/\\n\\n\\n/g, "\n\n")
-                .replace(/^\\n+/, "");
+                // .replace(/^\\n+/, "")
+                .replace(/^\n+/, "")
+                .replace(/\n+$/, "");
         return stripped;
-
-        // // This is the test code I did (on jsfiddle)
-        // // for testing stripSsml function.
-        // // I really need to get some unit testing going...
-        // function stripSsml(ssml) {
-        //         let stripped = 
-        //             ssml
-        //             		// Combines </p> <p> to not double para breaks
-        //                 .replace(/\<\/p\>[ ]*\<p\>/g, "<p>")
-        //                 // remove spaces after <p>,</p> tags
-        //                 .replace(/\<p\>[ ]/g, "<p>")
-        //                 .replace(/\<\/p\>[ ]/g, "</p>")
-        //                 // convert <p> and </p> to two new lines
-        //                 .replace(/\<[\/]*p\>/g, "\n\n")
-        //                 // Strip all remaining tags
-        //                 .replace(/(<([^>]*)>)/ig, "")
-        //                 // Replace multiple spaces with a single space
-        //                 .replace(/  +/g, ' ');
-        //         return stripped;
-        //     }
-
-        // let ssml = `<speak>This is some text. <p>This is in a paragraph.</p> All of this has ssml stuff <break="1s" /> yo. <p>This <phoneme alphabet="ipa" ph="pɪˈkɑːn">pecan</phoneme> tastes good!</p> <p> This is another paragraph.</p></speak>`;
-
-        // let ssmlStripped = stripSsml(ssml);
-
-        // //let ssmlStripped = 
-        // //  ssml.replace(/\<\/p\>\W/g, "</p>")
-        // //    .replace(/\<[\/]*p\>/g, "\n\n")
-        // //    .replace(/(<([^>]*)>)/ig, "")
-        // //    .replace(/  +/g, ' ');
-
-        // console.log(ssml);
-        // console.log(ssmlStripped);
-
     }
 
     /**
@@ -354,6 +322,8 @@ export class Helper implements IHelper {
      * @param text Literal text that we're wrapping the phoneme tag around, e.g. "sewing".
      * @param pronunciation the phoneme itself, e.g. "soʊɪŋ"
      * @param alphabet phoneme alphabet, either "ipa" or "x-sampe" (ATOW)
+     * 
+     * @see {@link https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/speech-synthesis-markup-language-ssml-reference#prosody|SsmlReference}
      */
     phoneme(
         text: string,
@@ -370,6 +340,8 @@ export class Helper implements IHelper {
      * 
      * @param text to wrap with the emphasis tag
      * @param level attribute in emphasis tag. Valid values "strong" | "moderate" | "reduced" = "moderate"
+     * 
+     * @see {@link https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/speech-synthesis-markup-language-ssml-reference#prosody|SsmlReference}
      */
     emphasis(
         text: string,
@@ -385,6 +357,8 @@ export class Helper implements IHelper {
      * @param rate valid values ATOW "x-slow" | "slow" | "medium" | "fast" | "x-fast" | number,
      * @param pitch valid values ATOW "x-low" | "low" | "medium" | "high" | "x-high" | number,
      * @param volume valid values ATOW "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
+     * 
+     * @see {@link https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/speech-synthesis-markup-language-ssml-reference#prosody|SsmlReference}
      */
     prosody(
         text: string,
@@ -397,26 +371,48 @@ export class Helper implements IHelper {
             pitch?: "x-low" | "low" | "medium" | "high" | "x-high" | number,
             volume?: "silent" | "x-soft" | "soft" | "medium" | "loud" | "x-loud" | number
     }): string {
-        // need to add the + to positive numbers
+        let t = this, lc = `prosody`;
+
+        // adds the + to positive numbers
         let rateText = 
             rate && !isNaN(<number>rate) ?
             rate + "%" :
             rate;
         let pitchText; 
         if (pitch && !isNaN(<number>pitch) && pitch > 0) {
-            pitchText = "+" + <number>pitch + "%";
+            let max = 50;
+            let pitchNum = <number>pitch;
+            if (pitchNum > max) {
+                t.log(`max: ${max}, actual: ${pitchNum}`, "warn", 2, lc);
+            }
+            pitchText = "+" + pitchNum + "%";
         } else if (pitch && !isNaN(<number>pitch)) {
-            pitchText = "-" + <number>pitch + "%";
+            let min = -33.3;
+            let pitchNum = <number>pitch;
+            if (pitchNum < min) {
+                t.log(`min: ${min}, actual: ${pitchNum}`, "warn", 2, lc);
+            }
+            pitchText = pitchNum + "%";
         } else {
             // word value or falsy
             pitchText = pitch || "";
         } 
         
         let volumeText;
-        if (volume && !isNaN(<number>volume) && volume > 0) {
-            volumeText = "+" + <number>volume + "%";
+        if ((volume || volume === 0) && !isNaN(<number>volume) && volume >= 0) {
+            let max = 4.08;
+            let volumeNum = <number>volume;
+            if (volumeNum > max) {
+                t.log(`max: ${max}, actual: ${volumeNum}`, "warn", 2, lc);
+            }
+            volumeText = "+" + volumeNum + "%";
         } else if (volume && !isNaN(<number>volume)) {
-            volumeText = "-" + <number>volume + "%";
+            let min = -12;
+            let volumeNum = <number>volume;
+            if (volumeNum < min) {
+                t.log(`min: ${min}, actual: ${volumeNum}`, "warn", 2, lc);
+            }
+           volumeText = volumeNum + "%";
         } else {
             // word value or falsy
             volumeText = volume || "";

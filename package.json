@@ -1,6 +1,6 @@
 {
   "name": "ask-gib",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight TypeScript-ified (unofficial) Alexa Skills Kit helper library. Includes a base AlexaSkill class with optional DynamoDB persistence of session attributes, a FuncyAlexaSkill that is more functional in approach, helper class for logging and utils, and more. Read the readme for more details.",
   "main": "bin/index.js",
   "scripts": {
