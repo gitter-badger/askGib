@@ -1,4 +1,5 @@
 import * as ask from './alexa-skills-kit';
+import { Ssml } from './ssml';
 
 import * as help from './helper';
 let h = new help.Helper();
@@ -134,7 +135,7 @@ export class SpeechBuilder {
                     h.log(`ssml in case`, "debug", 0, lc);
                     // do these in two steps to fully strip ssml.
                     text += bit.value;
-                    text = h.stripSsml(text); 
+                    text = Ssml.stripSsml(text); 
                     ssml += bit.value;
                     break;
                 case "break":
@@ -150,7 +151,7 @@ export class SpeechBuilder {
                     if (existing.text && existing.ssml) {
                         h.log(`existing text and ssml`, "debug", 0, lc);
                         text += existing.text;
-                        ssml += h.unwrapSsmlSpeak(existing.ssml);
+                        ssml += Ssml.unwrapSsmlSpeak(existing.ssml);
                     } else if (existing.text) {
                         h.log(`existing text only`, "debug", 0, lc);
                         text += existing.text;
@@ -158,10 +159,10 @@ export class SpeechBuilder {
                     } else { // existing ssml
                         h.log(`existing ssml only`, "debug", 0, lc);
                         let unwrapped = 
-                            h.unwrapSsmlSpeak(existing.ssml);
+                            Ssml.unwrapSsmlSpeak(existing.ssml);
                         // do these in two steps to fully strip ssml.
                         text += unwrapped;
-                        text = h.stripSsml(text);
+                        text = Ssml.stripSsml(text);
                         ssml += unwrapped;
                     }
                     break;
@@ -178,7 +179,7 @@ export class SpeechBuilder {
         let output: ask.OutputSpeech = {
             type: ask.OutputSpeechType.SSML,
             text: text,
-            ssml: h.wrapSsmlSpeak([ssml], /*addParaTags*/ false)
+            ssml: Ssml.wrapSsmlSpeak([ssml], /*addParaTags*/ false)
         }
 
         // h.log(`output: ${JSON.stringify(output)}`, "debug", 0, lc);
