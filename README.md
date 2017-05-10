@@ -1,6 +1,8 @@
 # askGib
 ## Alexa Skills Kit
 
+[![Join the chat at https://gitter.im/askGib/Lobby](https://badges.gitter.im/askGib/Lobby.svg)](https://gitter.im/askGib/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Lightweight, TypeScript-ified, unofficial library for writing Alexa Skills on AWS Lambda.
 
 _NB: This is NOT an official package. Amazon has NOT given any endorsements or anything of that nature. I wanted to use TypeScript for developing Alexa Skills. Read on for further info._
